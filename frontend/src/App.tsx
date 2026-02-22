@@ -22,15 +22,25 @@ function isMultiDay(event: CalendarEvent): boolean {
   );
 }
 
+function getDayRole(event: CalendarEvent, date: Date): 'start' | 'middle' | 'end' {
+  const fmt = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const start = new Date(event.startDate);
+  const end   = new Date(event.endDate);
+  if (fmt(start) === fmt(date)) return 'start';
+  if (fmt(end)   === fmt(date)) return 'end';
+  return 'middle';
+}
+
 function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem[]) {
   const parent = elt.parentElement as HTMLElement;
 
-  const allDayEvents = events.filter((e) => e.calendarEvent.allDay || isMultiDay(e.calendarEvent));
-  const timedEvents  = events.filter((e) => !e.calendarEvent.allDay && !isMultiDay(e.calendarEvent));
+  const trueAllDayEvents    = events.filter((e) => e.calendarEvent.allDay);
+  const multiDayTimedEvents = events.filter((e) => !e.calendarEvent.allDay && isMultiDay(e.calendarEvent));
+  const timedEvents         = events.filter((e) => !e.calendarEvent.allDay && !isMultiDay(e.calendarEvent));
 
-  // Full background fill for all-day / multi-day events
-  if (allDayEvents.length > 0) {
-    const colors = [...new Set(allDayEvents.map((e) => e.color as string | undefined).filter(Boolean))] as string[];
+  // Full background fill for true all-day events
+  if (trueAllDayEvents.length > 0) {
+    const colors = [...new Set(trueAllDayEvents.map((e) => e.color as string | undefined).filter(Boolean))] as string[];
     if (colors.length === 1) {
       parent.style.background = colors[0];
     } else {
@@ -41,6 +51,40 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
       });
       parent.style.background = `linear-gradient(to bottom, ${stops.join(', ')})`;
     }
+  }
+
+  // Vertical bars clipped to start/end time for multi-day timed events
+  if (multiDayTimedEvents.length > 0) {
+    parent.style.position = 'relative';
+    const n = multiDayTimedEvents.length;
+    const barWidthPct = 100 / n;
+
+    multiDayTimedEvents.forEach((e, i) => {
+      const role  = getDayRole(e.calendarEvent, _date);
+      const start = new Date(e.calendarEvent.startDate);
+      const end   = new Date(e.calendarEvent.endDate);
+
+      const startPct = (start.getHours() * 60 + start.getMinutes()) / 1440 * 100;
+      const endPct   = Math.max((end.getHours() * 60 + end.getMinutes()) / 1440 * 100, 8);
+
+      const topPct    = role === 'start' ? startPct : 0;
+      const heightPct = role === 'start' ? 100 - startPct
+                      : role === 'end'   ? endPct
+                      :                    100;
+
+      const bar = document.createElement('div');
+      bar.style.cssText = [
+        'position:absolute',
+        `top:${topPct.toFixed(1)}%`,
+        `height:${heightPct.toFixed(1)}%`,
+        `left:${(i * barWidthPct).toFixed(1)}%`,
+        `width:${barWidthPct.toFixed(1)}%`,
+        `background:${e.color ?? '#888'}`,
+        'opacity:0.7',
+        'pointer-events:none',
+      ].join(';');
+      parent.insertBefore(bar, elt);
+    });
   }
 
   // Vertical time bars for single-day timed events
