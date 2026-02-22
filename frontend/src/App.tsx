@@ -3,6 +3,7 @@ import Calendar from 'rc-year-calendar';
 import 'js-year-calendar/dist/js-year-calendar.css';
 import { api } from './lib/api.js';
 import type { CalendarInfo, CalendarEvent, CreateEventPayload, UpdateEventPayload } from './lib/types.js';
+import { layoutEvents } from './lib/layout.js';
 import type { CalendarDataSourceItem, CalendarDayEventObject } from 'rc-year-calendar';
 import Toolbar from './components/Toolbar.js';
 import CalendarSidebar from './components/CalendarSidebar.js';
@@ -58,8 +59,15 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
   // Vertical bars clipped to start/end time for multi-day timed events
   if (multiDayTimedEvents.length > 0) {
     parent.style.position = 'relative';
-    const n = multiDayTimedEvents.length;
-    const barWidthPct = 100 / n;
+    const mdRanges  = multiDayTimedEvents.map((e) => {
+      const role  = getDayRole(e.calendarEvent, _date);
+      const start = new Date(e.calendarEvent.startDate);
+      const end   = new Date(e.calendarEvent.endDate);
+      const startMin = role === 'start' ? start.getHours() * 60 + start.getMinutes() : 0;
+      const endMin   = role === 'end'   ? end.getHours()   * 60 + end.getMinutes()   : 1440;
+      return { startMin, endMin };
+    });
+    const mdLayout = layoutEvents(mdRanges);
 
     multiDayTimedEvents.forEach((e, i) => {
       const role  = getDayRole(e.calendarEvent, _date);
@@ -74,12 +82,15 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
                       : role === 'end'   ? endPct
                       :                    100;
 
+      const { col, totalCols } = mdLayout[i];
+      const barWidthPct = 100 / totalCols;
+
       const bar = document.createElement('div');
       bar.style.cssText = [
         'position:absolute',
         `top:${topPct.toFixed(1)}%`,
         `height:${heightPct.toFixed(1)}%`,
-        `left:${(i * barWidthPct).toFixed(1)}%`,
+        `left:${(col * barWidthPct).toFixed(1)}%`,
         `width:${barWidthPct.toFixed(1)}%`,
         `background:${e.color ?? '#888'}`,
         'opacity:0.7',
@@ -92,15 +103,20 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
   // Vertical time bars for single-day timed events
   if (timedEvents.length > 0) {
     parent.style.position = 'relative';
-    const n = timedEvents.length;
-    const barWidthPct = 100 / n;
+    const tdRanges = timedEvents.map((e) => {
+      const start    = new Date(e.calendarEvent.startDate);
+      const end      = new Date(e.calendarEvent.endDate);
+      const startMin = start.getHours() * 60 + start.getMinutes();
+      const endMin   = end.getHours()   * 60 + end.getMinutes();
+      return { startMin, endMin: endMin > startMin ? endMin : startMin + 60 };
+    });
+    const tdLayout = layoutEvents(tdRanges);
 
     timedEvents.forEach((e, i) => {
-      const start = new Date(e.calendarEvent.startDate);
-      const end   = new Date(e.calendarEvent.endDate);
-      const startMin   = start.getHours() * 60 + start.getMinutes();
-      const endMin     = end.getHours()   * 60 + end.getMinutes();
-      const durationMin = endMin > startMin ? endMin - startMin : 60;
+      const { startMin, endMin }   = tdRanges[i];
+      const { col, totalCols }     = tdLayout[i];
+      const barWidthPct            = 100 / totalCols;
+      const durationMin            = endMin - startMin;
 
       const topPct    = (startMin / 1440 * 100).toFixed(1);
       const heightPct = Math.max(durationMin / 1440 * 100, 12).toFixed(1);
@@ -110,7 +126,7 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
         'position:absolute',
         `top:${topPct}%`,
         `height:${heightPct}%`,
-        `left:${(i * barWidthPct).toFixed(1)}%`,
+        `left:${(col * barWidthPct).toFixed(1)}%`,
         `width:${barWidthPct.toFixed(1)}%`,
         `background:${e.color ?? '#888'}`,
         'opacity:0.5',

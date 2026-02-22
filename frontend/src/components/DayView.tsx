@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import type { CalendarEvent } from '../lib/types.js';
+import { layoutEvents } from '../lib/layout.js';
 
 export interface DayViewEvent {
   calendarEvent: CalendarEvent;
@@ -30,6 +31,7 @@ function fmtTime(date: Date): string {
   return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
+
 export default function DayView({ date, events, onSelectEvent, onNewEvent, onClose }: DayViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +57,8 @@ export default function DayView({ date, events, onSelectEvent, onNewEvent, onClo
 
   const allDayEvts = events.filter(e => e.calendarEvent.allDay);
   const timedEvts  = events.filter(e => !e.calendarEvent.allDay);
-  const colW       = 100 / Math.max(timedEvts.length, 1);
+  const ranges     = timedEvts.map(e => getMinutesForDay(e.calendarEvent, date));
+  const layout     = layoutEvents(ranges);
 
   const label = date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -130,9 +133,11 @@ export default function DayView({ date, events, onSelectEvent, onNewEvent, onClo
 
               {/* Event bars */}
               {timedEvts.map((e, i) => {
-                const { startMin, endMin } = getMinutesForDay(e.calendarEvent, date);
+                const { startMin, endMin } = ranges[i];
+                const { col, totalCols }   = layout[i];
                 const top    = (startMin / 60) * HOUR_PX;
                 const height = Math.max(((endMin - startMin) / 60) * HOUR_PX, 20);
+                const colW   = 100 / totalCols;
                 const fmt    = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
                 const startObj = new Date(e.calendarEvent.startDate);
                 const showTime = fmt(startObj) === fmt(date);
@@ -146,7 +151,7 @@ export default function DayView({ date, events, onSelectEvent, onNewEvent, onClo
                       position: 'absolute',
                       top,
                       height,
-                      left: `${i * colW}%`,
+                      left: `${col * colW}%`,
                       width: `${colW}%`,
                       background: e.color ?? '#888',
                       opacity: 0.85,
