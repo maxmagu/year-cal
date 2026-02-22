@@ -357,6 +357,7 @@ export default function App() {
         .status { padding: 2rem; text-align: center; color: #666; }
         .error { color: #e74c3c; }
         .day-today { box-shadow: inset 0 0 0 2px #e74c3c; border-radius: 50%; }
+        .day-content { position: relative; z-index: 1; }
       `}</style>
     </div>
   );
