@@ -400,6 +400,10 @@ export default function App() {
         .day-today { position: relative; }
         .day-today::after { content: ''; position: absolute; inset: 0; border-radius: 4px; box-shadow: inset 0 0 0 2px #e74c3c, inset 0 0 0 3px white; pointer-events: none; z-index: 2; }
         .day-content { position: relative; z-index: 1; }
+        .calendar table td, .calendar table th { width: 38px; }
+        .calendar table.month td.day .day-content { padding: 10px 6px; }
+        .calendar .months-container { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); align-items: start; row-gap: 1.5rem; }
+        .calendar .months-container .month-container { float: none !important; width: 100% !important; height: auto !important; }
       `}</style>
     </div>
   );
