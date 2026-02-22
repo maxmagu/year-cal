@@ -136,7 +136,8 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       {mdBars.map(b => (
         <div key={b.key} style={{
           position: 'absolute',
-          top: b.top, height: b.height, left: b.left, width: b.width,
+          top: b.top, height: b.height,
+          left: `calc(${b.left} + 2px)`, width: `calc(${b.width} - 4px)`,
           background: b.background, borderRadius: b.borderRadius,
           opacity: 0.7, pointerEvents: 'none',
         }} />
@@ -144,9 +145,10 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       {timedBars.map(b => (
         <div key={b.key} style={{
           position: 'absolute',
-          top: b.top, height: b.height, left: b.left, width: b.width,
+          top: b.top, height: b.height,
+          left: `calc(${b.left} + 2px)`, width: `calc(${b.width} - 4px)`,
           background: b.background,
-          opacity: 0.5, borderRadius: 1, pointerEvents: 'none',
+          opacity: 0.5, borderRadius: 3, pointerEvents: 'none',
         }} />
       ))}
       {isToday && (
