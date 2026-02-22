@@ -409,7 +409,7 @@ export default function App() {
         .day-content { position: relative; z-index: 1; }
         .calendar table td, .calendar table th { width: ${cellSize}px; }
         .calendar table.month td.day .day-content { padding: ${Math.round(cellSize / 4)}px 6px; }
-        .calendar .months-container { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(${cellSize * 7 + 20}px, 1fr)); align-items: start; row-gap: 1.5rem; }
+        .calendar .months-container { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(${cellSize * 7 + 20}px, 1fr)); align-items: start; row-gap: ${Math.round(cellSize * 0.6)}px; }
         .calendar .months-container .month-container { float: none !important; width: 100% !important; height: auto !important; }
       `}</style>
     </div>
