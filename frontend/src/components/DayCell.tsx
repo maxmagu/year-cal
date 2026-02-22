@@ -9,7 +9,7 @@ interface DayCellProps {
   isToday: boolean;
   cellSize: number;
   onClick: () => void;
-  onMouseEnter?: () => void;
+  onMouseEnter?: (rect: DOMRect) => void;
   onMouseLeave?: () => void;
   label?: string;
 }
@@ -122,7 +122,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
     <td
       style={{ position: 'relative', width: cellSize, height: cellSize, cursor: 'pointer', padding: 0, background: isHovered ? '#e8e8e8' : '#fafafa' }}
       onClick={onClick}
-      onMouseEnter={() => { setIsHovered(true); onMouseEnter?.(); }}
+      onMouseEnter={(e) => { setIsHovered(true); onMouseEnter?.(e.currentTarget.getBoundingClientRect()); }}
       onMouseLeave={() => { setIsHovered(false); onMouseLeave?.(); }}
     >
       {allDayBars.map(b => (

@@ -14,9 +14,10 @@ interface MonthGridProps {
   eventsByDay: Map<string, EventDataItem[]>;
   todayKey: string;
   onDayClick: (date: Date) => void;
+  onDayHover: (date: Date | null, rect?: DOMRect) => void;
 }
 
-export default function MonthGrid({ year, month, cellSize, eventsByDay, todayKey, onDayClick }: MonthGridProps) {
+export default function MonthGrid({ year, month, cellSize, eventsByDay, todayKey, onDayClick, onDayHover }: MonthGridProps) {
   const cells = getMonthDays(year, month);
   const weeks: (Date | null)[][] = [];
   for (let i = 0; i < cells.length; i += 7) {
@@ -50,6 +51,8 @@ export default function MonthGrid({ year, month, cellSize, eventsByDay, todayKey
                   isToday={fmtDayKey(date) === todayKey}
                   cellSize={cellSize}
                   onClick={() => onDayClick(date)}
+                  onMouseEnter={(rect) => onDayHover(date, rect)}
+                  onMouseLeave={() => onDayHover(null)}
                 />
               : <td key={di} style={{ width: cellSize, height: cellSize }} />
             )}

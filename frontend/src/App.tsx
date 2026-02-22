@@ -10,6 +10,7 @@ import DayView from './components/DayView.js';
 import type { DayViewEvent } from './components/DayView.js';
 import YearView from './components/YearView.js';
 import TransposedView from './components/TransposedView.js';
+import DayOverview from './components/DayOverview.js';
 
 export default function App() {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -25,6 +26,8 @@ export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalEvent, setModalEvent] = useState<CalendarEvent | null>(null);
   const [modalDefaultDate, setModalDefaultDate] = useState('');
+
+  const [hovered, setHovered] = useState<{ date: Date; rect: DOMRect } | null>(null);
 
   const [dayViewOpen, setDayViewOpen] = useState(false);
   const [dayViewDate, setDayViewDate] = useState<Date | null>(null);
@@ -210,6 +213,7 @@ export default function App() {
               eventsByDay={eventsByDay}
               todayKey={todayKey}
               onDayClick={handleDayClick}
+              onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
             />
           ) : (
             <TransposedView
@@ -218,6 +222,7 @@ export default function App() {
               eventsByDay={eventsByDay}
               todayKey={todayKey}
               onDayClick={handleDayClick}
+              onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
             />
           )}
         </div>
@@ -231,6 +236,12 @@ export default function App() {
           onClose={closeDayView}
         />
       )}
+      {hovered && (() => {
+        const events = eventsByDay.get(fmtDayKey(hovered.date)) ?? [];
+        return events.length > 0
+          ? <DayOverview date={hovered.date} events={events} anchorRect={hovered.rect} />
+          : null;
+      })()}
       {modalOpen && (
         <EventModal
           event={modalEvent}

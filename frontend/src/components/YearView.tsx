@@ -7,9 +7,10 @@ interface YearViewProps {
   eventsByDay: Map<string, EventDataItem[]>;
   todayKey: string;
   onDayClick: (date: Date) => void;
+  onDayHover: (date: Date | null, rect?: DOMRect) => void;
 }
 
-export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick }: YearViewProps) {
+export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover }: YearViewProps) {
   return (
     <div style={{
       display: 'grid',
@@ -28,6 +29,7 @@ export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayC
           eventsByDay={eventsByDay}
           todayKey={todayKey}
           onDayClick={onDayClick}
+          onDayHover={onDayHover}
         />
       ))}
     </div>

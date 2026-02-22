@@ -13,14 +13,16 @@ interface TransposedViewProps {
   eventsByDay: Map<string, EventDataItem[]>;
   todayKey: string;
   onDayClick: (date: Date) => void;
+  onDayHover: (date: Date | null, rect?: DOMRect) => void;
 }
 
 function isValidDate(year: number, month: number, day: number): boolean {
   return new Date(year, month, day).getMonth() === month;
 }
 
-export default function TransposedView({ year, cellSize, eventsByDay, todayKey, onDayClick }: TransposedViewProps) {
+export default function TransposedView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover }: TransposedViewProps) {
   const [hovered, setHovered] = useState<{ m: number; day: number } | null>(null);
+
   const stickyRowStyle: React.CSSProperties = {
     position: 'sticky',
     left: 0,
@@ -48,9 +50,19 @@ export default function TransposedView({ year, cellSize, eventsByDay, todayKey, 
 
   const hlStyle: React.CSSProperties = { color: '#111', fontWeight: 700, background: '#e8e8e8' };
 
+  function handleMouseEnter(date: Date, m: number, day: number, rect: DOMRect) {
+    setHovered({ m, day });
+    onDayHover(date, rect);
+  }
+
+  function handleMouseLeave() {
+    setHovered(null);
+    onDayHover(null);
+  }
+
   return (
     <div style={{ overflow: 'auto', flex: 1, padding: '0.5rem' }}>
-      <table style={{ borderCollapse: 'collapse' }} onMouseLeave={() => setHovered(null)}>
+      <table style={{ borderCollapse: 'collapse' }} onMouseLeave={handleMouseLeave}>
         <thead>
           <tr>
             {/* corner */}
@@ -70,7 +82,7 @@ export default function TransposedView({ year, cellSize, eventsByDay, todayKey, 
                 const day = dayIdx + 1;
                 if (!isValidDate(year, m, day)) {
                   return <td key={day} style={{ background: '#f5f5f5', width: cellSize, height: cellSize }}
-                    onMouseEnter={() => setHovered({ m, day })} />;
+                    onMouseEnter={() => { setHovered({ m, day }); onDayHover(null); }} />;
                 }
                 const date = new Date(year, m, day);
                 return (
@@ -82,7 +94,7 @@ export default function TransposedView({ year, cellSize, eventsByDay, todayKey, 
                     cellSize={cellSize}
                     onClick={() => onDayClick(date)}
                     label={DOW[date.getDay()]}
-                    onMouseEnter={() => setHovered({ m, day })}
+                    onMouseEnter={(rect) => handleMouseEnter(date, m, day, rect)}
                   />
                 );
               })}
