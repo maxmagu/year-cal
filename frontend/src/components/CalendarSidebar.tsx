@@ -17,7 +17,7 @@ const sectionLabel: React.CSSProperties = {
   letterSpacing: '0.05em',
 };
 
-function CalendarList({ calendars, selected, onToggle }: CalendarSidebarProps) {
+function CalendarList({ calendars, selected, onToggle }: Pick<CalendarSidebarProps, 'calendars' | 'selected' | 'onToggle'>) {
   return (
     <>
       {calendars.map((cal) => (
