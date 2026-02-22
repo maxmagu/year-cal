@@ -43,17 +43,36 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
     }
   }
 
-  // Colored dots for timed (non-all-day) events
+  // Vertical time bars for single-day timed events
   if (timedEvents.length > 0) {
-    const colors = [...new Set(timedEvents.map((e) => e.color as string | undefined).filter(Boolean))] as string[];
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;justify-content:center;gap:3px;padding-top:2px;';
-    colors.forEach((color) => {
-      const dot = document.createElement('span');
-      dot.style.cssText = `width:5px;height:5px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;`;
-      row.appendChild(dot);
+    parent.style.position = 'relative';
+    const n = timedEvents.length;
+    const barWidthPct = 100 / n;
+
+    timedEvents.forEach((e, i) => {
+      const start = new Date(e.calendarEvent.startDate);
+      const end   = new Date(e.calendarEvent.endDate);
+      const startMin   = start.getHours() * 60 + start.getMinutes();
+      const endMin     = end.getHours()   * 60 + end.getMinutes();
+      const durationMin = endMin > startMin ? endMin - startMin : 60;
+
+      const topPct    = (startMin / 1440 * 100).toFixed(1);
+      const heightPct = Math.max(durationMin / 1440 * 100, 12).toFixed(1);
+
+      const bar = document.createElement('div');
+      bar.style.cssText = [
+        'position:absolute',
+        `top:${topPct}%`,
+        `height:${heightPct}%`,
+        `left:${(i * barWidthPct).toFixed(1)}%`,
+        `width:${barWidthPct.toFixed(1)}%`,
+        `background:${e.color ?? '#888'}`,
+        'opacity:0.5',
+        'pointer-events:none',
+        'border-radius:1px',
+      ].join(';');
+      parent.insertBefore(bar, elt);
     });
-    elt.appendChild(row);
   }
 }
 
