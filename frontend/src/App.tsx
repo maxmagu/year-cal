@@ -59,17 +59,35 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
 
   // Full background fill for true all-day events
   if (trueAllDayEvents.length > 0) {
-    const colors = [...new Set(trueAllDayEvents.map((e) => e.color as string | undefined).filter(Boolean))] as string[];
-    if (colors.length === 1) {
-      parent.style.background = colors[0];
-    } else {
-      const stops = colors.flatMap((color, i) => {
-        const start = ((i / colors.length) * 100).toFixed(1);
-        const end   = (((i + 1) / colors.length) * 100).toFixed(1);
-        return [`${color} ${start}%`, `${color} ${end}%`];
-      });
-      parent.style.background = `linear-gradient(to bottom, ${stops.join(', ')})`;
-    }
+    parent.style.position = 'relative';
+    const fmtFn = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const dateKey = fmtFn(_date);
+    const n = trueAllDayEvents.length;
+    const colWidthPct = 100 / n;
+
+    trueAllDayEvents.forEach((e, i) => {
+      const isStartDay = fmtFn(e.startDate) === dateKey;
+      const isEndDay   = fmtFn(e.endDate)   === dateKey;
+      const r = 4;
+      const borderRadius = (isStartDay && isEndDay) ? `${r}px`
+                         : isStartDay               ? `${r}px 0 0 ${r}px`
+                         : isEndDay                 ? `0 ${r}px ${r}px 0`
+                         :                            '0';
+
+      const div = document.createElement('div');
+      div.style.cssText = [
+        'position:absolute',
+        'top:0',
+        'height:100%',
+        `left:${(i * colWidthPct).toFixed(1)}%`,
+        `width:${colWidthPct.toFixed(1)}%`,
+        `background:${e.color ?? '#888'}`,
+        `border-radius:${borderRadius}`,
+        'pointer-events:none',
+      ].join(';');
+      div.className = 'ev-bar';
+      parent.insertBefore(div, elt);
+    });
   }
 
   // Vertical bars clipped to start/end time for multi-day timed events
@@ -100,6 +118,10 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
 
       const { col, totalCols } = mdLayout[i];
       const barWidthPct = 100 / totalCols;
+      const r = 3;
+      const borderRadius = role === 'start' ? `${r}px 0 0 ${r}px`
+                         : role === 'end'   ? `0 ${r}px ${r}px 0`
+                         :                    '0';
 
       const bar = document.createElement('div');
       bar.style.cssText = [
@@ -109,6 +131,7 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
         `left:${(col * barWidthPct).toFixed(1)}%`,
         `width:${barWidthPct.toFixed(1)}%`,
         `background:${e.color ?? '#888'}`,
+        `border-radius:${borderRadius}`,
         'opacity:0.7',
         'pointer-events:none',
       ].join(';');
@@ -374,7 +397,8 @@ export default function App() {
         .content { flex: 1; overflow: auto; display: flex; flex-direction: column; }
         .status { padding: 2rem; text-align: center; color: #666; }
         .error { color: #e74c3c; }
-        .day-today { box-shadow: inset 0 0 0 2px #e74c3c; border-radius: 50%; }
+        .day-today { position: relative; }
+        .day-today::after { content: ''; position: absolute; inset: 0; border-radius: 4px; box-shadow: inset 0 0 0 2px #e74c3c, inset 0 0 0 3px white; pointer-events: none; z-index: 2; }
         .day-content { position: relative; z-index: 1; }
       `}</style>
     </div>
