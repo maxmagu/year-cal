@@ -64,7 +64,7 @@ export default function TransposedView({ year, cellSize, eventsByDay, todayKey, 
         <tbody>
           {/* one row per month */}
           {MONTH_SHORT.map((name, m) => (
-            <tr key={m}>
+            <tr key={m} style={{ borderTop: `${Math.round(cellSize * 0.07)}px solid transparent` }}>
               <td style={{ ...stickyRowStyle, ...(hovered?.m === m ? hlStyle : {}) }}>{name}</td>
               {Array.from({ length: 31 }, (_, dayIdx) => {
                 const day = dayIdx + 1;
