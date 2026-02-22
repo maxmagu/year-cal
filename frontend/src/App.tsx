@@ -96,21 +96,22 @@ export default function App() {
       const next = new Set(prev);
       if (next.has(url)) next.delete(url);
       else next.add(url);
-      loadEvents(next, year);
       return next;
     });
   }
 
+  const allCalendarUrls = new Set(calendars.map(c => c.url));
+
   function prevYear() {
     const yr = year - 1;
     setYear(yr);
-    loadEvents(selectedCalendarUrls, yr);
+    loadEvents(allCalendarUrls, yr);
   }
 
   function nextYear() {
     const yr = year + 1;
     setYear(yr);
-    loadEvents(selectedCalendarUrls, yr);
+    loadEvents(allCalendarUrls, yr);
   }
 
   function handleDayClick(date: Date) {
