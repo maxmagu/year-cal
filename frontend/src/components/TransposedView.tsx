@@ -18,7 +18,7 @@ function isValidDate(year: number, month: number, day: number): boolean {
 }
 
 export default function TransposedView({ year, cellSize, eventsByDay, todayKey, onDayClick }: TransposedViewProps) {
-  const stickyColStyle: React.CSSProperties = {
+  const stickyRowStyle: React.CSSProperties = {
     position: 'sticky',
     left: 0,
     background: '#fafafa',
@@ -48,37 +48,38 @@ export default function TransposedView({ year, cellSize, eventsByDay, todayKey, 
       <table style={{ borderCollapse: 'collapse' }}>
         <thead>
           <tr>
+            {/* corner */}
             <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 3, background: '#fafafa', width: '2rem', minWidth: '2rem' }} />
-            {MONTH_SHORT.map((m, i) => (
-              <th key={i} style={headerCellStyle}>{m}</th>
+            {/* day-number headers: 1–31 */}
+            {Array.from({ length: 31 }, (_, i) => (
+              <th key={i} style={headerCellStyle}>{i + 1}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {Array.from({ length: 31 }, (_, dayIdx) => {
-            const day = dayIdx + 1;
-            return (
-              <tr key={day}>
-                <td style={stickyColStyle}>{day}</td>
-                {Array.from({ length: 12 }, (_, m) => {
-                  if (!isValidDate(year, m, day)) {
-                    return <td key={m} style={{ background: '#f5f5f5', width: cellSize, height: cellSize }} />;
-                  }
-                  const date = new Date(year, m, day);
-                  return (
-                    <DayCell
-                      key={m}
-                      date={date}
-                      events={eventsByDay.get(fmtDayKey(date)) ?? []}
-                      isToday={fmtDayKey(date) === todayKey}
-                      cellSize={cellSize}
-                      onClick={() => onDayClick(date)}
-                    />
-                  );
-                })}
-              </tr>
-            );
-          })}
+          {/* one row per month */}
+          {MONTH_SHORT.map((name, m) => (
+            <tr key={m}>
+              <td style={stickyRowStyle}>{name}</td>
+              {Array.from({ length: 31 }, (_, dayIdx) => {
+                const day = dayIdx + 1;
+                if (!isValidDate(year, m, day)) {
+                  return <td key={day} style={{ background: '#f5f5f5', width: cellSize, height: cellSize }} />;
+                }
+                const date = new Date(year, m, day);
+                return (
+                  <DayCell
+                    key={day}
+                    date={date}
+                    events={eventsByDay.get(fmtDayKey(date)) ?? []}
+                    isToday={fmtDayKey(date) === todayKey}
+                    cellSize={cellSize}
+                    onClick={() => onDayClick(date)}
+                  />
+                );
+              })}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
