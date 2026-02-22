@@ -7,6 +7,8 @@ import type { CalendarDataSourceItem, CalendarDayEventObject } from 'rc-year-cal
 import Toolbar from './components/Toolbar.js';
 import CalendarSidebar from './components/CalendarSidebar.js';
 import EventModal from './components/EventModal.js';
+import DayView from './components/DayView.js';
+import type { DayViewEvent } from './components/DayView.js';
 
 interface EventDataItem extends CalendarDataSourceItem {
   calendarEvent: CalendarEvent;
@@ -132,6 +134,10 @@ export default function App() {
   const [modalEvent, setModalEvent] = useState<CalendarEvent | null>(null);
   const [modalDefaultDate, setModalDefaultDate] = useState('');
 
+  const [dayViewOpen, setDayViewOpen] = useState(false);
+  const [dayViewDate, setDayViewDate] = useState<Date | null>(null);
+  const [dayViewEvents, setDayViewEvents] = useState<DayViewEvent[]>([]);
+
   const calendarColors = new Map(calendars.map((c) => [c.url, c.color]));
 
   const visibleEvents = allEvents.filter((e) => selectedCalendarUrls.has(e.calendarUrl));
@@ -206,12 +212,36 @@ export default function App() {
       setModalEvent(null);
       setModalDefaultDate(isoDate);
       setModalOpen(true);
-    } else {
+    } else if (e.events.length === 1) {
       const ev = e.events[0].calendarEvent;
       setModalEvent(ev);
       setModalDefaultDate(ev.startDate.slice(0, 10));
       setModalOpen(true);
+    } else {
+      setDayViewDate(d);
+      setDayViewEvents(e.events.map(ev => ({ calendarEvent: ev.calendarEvent, color: ev.color as string | undefined })));
+      setDayViewOpen(true);
     }
+  }
+
+  function closeDayView() {
+    setDayViewOpen(false);
+  }
+
+  function handleDayViewSelect(event: CalendarEvent) {
+    closeDayView();
+    setModalEvent(event);
+    setModalDefaultDate(event.startDate.slice(0, 10));
+    setModalOpen(true);
+  }
+
+  function handleDayViewNewEvent() {
+    closeDayView();
+    const d = dayViewDate!;
+    const isoDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    setModalEvent(null);
+    setModalDefaultDate(isoDate);
+    setModalOpen(true);
   }
 
   function closeModal() {
@@ -270,6 +300,15 @@ export default function App() {
           )}
         </div>
       </div>
+      {dayViewOpen && dayViewDate && (
+        <DayView
+          date={dayViewDate}
+          events={dayViewEvents}
+          onSelectEvent={handleDayViewSelect}
+          onNewEvent={handleDayViewNewEvent}
+          onClose={closeDayView}
+        />
+      )}
       {modalOpen && (
         <EventModal
           event={modalEvent}
