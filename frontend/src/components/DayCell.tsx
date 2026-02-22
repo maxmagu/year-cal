@@ -29,6 +29,32 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
   const multiDayTimedEvents = events.filter(e => !e.calendarEvent.allDay && isMultiDay(e.calendarEvent));
   const timedEvents         = events.filter(e => !e.calendarEvent.allDay && !isMultiDay(e.calendarEvent));
 
+  // Multi-day timed event bars (vertically clipped, full width)
+  const mdBars = (() => {
+    if (multiDayTimedEvents.length === 0) return [];
+    return multiDayTimedEvents.map((e, i) => {
+      const role  = getDayRole(e.calendarEvent, date);
+      const start = new Date(e.calendarEvent.startDate);
+      const end   = new Date(e.calendarEvent.endDate);
+      const startPct = (start.getHours() * 60 + start.getMinutes()) / 1440 * 100;
+      const endPct   = Math.max((end.getHours() * 60 + end.getMinutes()) / 1440 * 100, 8);
+      const topPct    = role === 'start' ? startPct : 0;
+      const heightPct = role === 'start' ? 100 - startPct : role === 'end' ? endPct : 100;
+      const r = 3;
+      const dayAfterStart = new Date(start); dayAfterStart.setDate(dayAfterStart.getDate() + 1);
+      const dayBeforeEnd  = new Date(end);   dayBeforeEnd.setDate(dayBeforeEnd.getDate() - 1);
+      const isFirstMiddle = role === 'middle' && fmtDayKey(dayAfterStart) === fmtDayKey(date);
+      const isLastMiddle  = role === 'middle' && fmtDayKey(dayBeforeEnd)  === fmtDayKey(date);
+      const borderRadius = role === 'start'                ? `${r}px 0 0 ${r}px`
+                         : role === 'end'                  ? `0 ${r}px ${r}px 0`
+                         : (isFirstMiddle && isLastMiddle) ? `${r}px 0 ${r}px 0`
+                         : isFirstMiddle                   ? `${r}px 0 0 0`
+                         : isLastMiddle                    ? `0 0 ${r}px 0`
+                         :                                   '0';
+      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius };
+    });
+  })();
+
   // All-day background fills
   const allDayBars = (() => {
     const n = trueAllDayEvents.length;
@@ -62,13 +88,21 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           pointerEvents: 'none',
         }} />
       ))}
-      {(multiDayTimedEvents.length > 0 || timedEvents.length > 0) && (
+      {mdBars.map(b => (
+        <div key={b.key} style={{
+          position: 'absolute', left: 0, right: 0,
+          top: b.top, height: b.height,
+          background: b.background, borderRadius: b.borderRadius,
+          pointerEvents: 'none', zIndex: 1,
+        }} />
+      ))}
+      {timedEvents.length > 0 && (
         <div style={{
           position: 'absolute', bottom: 3, left: 0, right: 0,
           display: 'flex', justifyContent: 'center', gap: 2,
           pointerEvents: 'none', zIndex: 1,
         }}>
-          {[...multiDayTimedEvents, ...timedEvents].map((e, i) => (
+          {timedEvents.map((e, i) => (
             <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />
           ))}
         </div>
