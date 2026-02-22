@@ -2,9 +2,11 @@ interface ToolbarProps {
   year: number;
   onPrev: () => void;
   onNext: () => void;
+  onSizeIncrease: () => void;
+  onSizeDecrease: () => void;
 }
 
-export default function Toolbar({ year, onPrev, onNext }: ToolbarProps) {
+export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDecrease }: ToolbarProps) {
   return (
     <div style={{
       display: 'flex',
@@ -17,6 +19,10 @@ export default function Toolbar({ year, onPrev, onNext }: ToolbarProps) {
       <button onClick={onPrev} style={btnStyle}>‹</button>
       <span style={{ fontWeight: 600, fontSize: '1.1rem', minWidth: '4ch', textAlign: 'center' }}>{year}</span>
       <button onClick={onNext} style={btnStyle}>›</button>
+      <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem' }}>
+        <button onClick={onSizeDecrease} style={btnStyle}>−</button>
+        <button onClick={onSizeIncrease} style={btnStyle}>+</button>
+      </div>
     </div>
   );
 }
