@@ -55,7 +55,7 @@ export default function CalendarSidebar({ calendars, selected, onToggle, onlyMul
           checked={onlyMultiDay}
           onChange={onToggleOnlyMultiDay}
         />
-        <span>Only multi-day events</span>
+        <span>Show only full day and multi-day events</span>
       </label>
       {veventCals.length > 0 && (
         <>

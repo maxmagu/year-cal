@@ -176,7 +176,7 @@ export default function App() {
   const calendarColors = new Map(calendars.map((c) => [c.url, c.color]));
 
   const visibleEvents = allEvents.filter((e) =>
-    selectedCalendarUrls.has(e.calendarUrl) && (!onlyMultiDay || isMultiDay(e))
+    selectedCalendarUrls.has(e.calendarUrl) && (!onlyMultiDay || e.allDay || isMultiDay(e))
   );
 
   const dataSource: EventDataItem[] = visibleEvents.map((e) => ({
