@@ -69,9 +69,16 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const { col, totalCols } = mdLayout[i];
       const barWidthPct = 100 / totalCols;
       const r = 3;
-      const borderRadius = role === 'start' ? `${r}px 0 0 ${r}px`
-                         : role === 'end'   ? `0 ${r}px ${r}px 0`
-                         :                    '0';
+      const dayAfterStart = new Date(start); dayAfterStart.setDate(dayAfterStart.getDate() + 1);
+      const dayBeforeEnd  = new Date(end);   dayBeforeEnd.setDate(dayBeforeEnd.getDate() - 1);
+      const isFirstMiddle = role === 'middle' && fmtDayKey(dayAfterStart) === fmtDayKey(date);
+      const isLastMiddle  = role === 'middle' && fmtDayKey(dayBeforeEnd)  === fmtDayKey(date);
+      const borderRadius = role === 'start'               ? `${r}px 0 0 ${r}px`
+                         : role === 'end'                 ? `0 ${r}px ${r}px 0`
+                         : (isFirstMiddle && isLastMiddle)? `${r}px 0 ${r}px 0`
+                         : isFirstMiddle                  ? `${r}px 0 0 0`
+                         : isLastMiddle                   ? `0 0 ${r}px 0`
+                         :                                  '0';
       return {
         key: i,
         top: `${topPct.toFixed(1)}%`,
