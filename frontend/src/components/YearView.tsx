@@ -8,9 +8,10 @@ interface YearViewProps {
   todayKey: string;
   onDayClick: (date: Date) => void;
   onDayHover: (date: Date | null, rect?: DOMRect) => void;
+  weekendHighlight: boolean;
 }
 
-export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover }: YearViewProps) {
+export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight }: YearViewProps) {
   return (
     <div style={{
       display: 'grid',
@@ -30,6 +31,7 @@ export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayC
           todayKey={todayKey}
           onDayClick={onDayClick}
           onDayHover={onDayHover}
+          weekendHighlight={weekendHighlight}
         />
       ))}
     </div>

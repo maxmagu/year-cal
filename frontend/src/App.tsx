@@ -16,6 +16,7 @@ export default function App() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [cellSize, setCellSize] = useState(38);
   const [view, setView] = useState<'grid' | 'transposed'>('grid');
+  const [weekendHighlight, setWeekendHighlight] = useState(true);
   const [calendars, setCalendars] = useState<CalendarInfo[]>([]);
   const [selectedCalendarUrls, setSelectedCalendarUrls] = useState<Set<string>>(new Set());
   const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
@@ -193,6 +194,8 @@ export default function App() {
         onSizeDecrease={() => setCellSize(s => Math.max(s - 4, 22))}
         view={view}
         onViewChange={setView}
+        weekendHighlight={weekendHighlight}
+        onToggleWeekendHighlight={() => setWeekendHighlight(v => !v)}
       />
       <div className="main">
         <CalendarSidebar
@@ -215,6 +218,7 @@ export default function App() {
               todayKey={todayKey}
               onDayClick={handleDayClick}
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
+              weekendHighlight={weekendHighlight}
             />
           ) : (
             <TransposedView
@@ -224,6 +228,7 @@ export default function App() {
               todayKey={todayKey}
               onDayClick={handleDayClick}
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
+              weekendHighlight={weekendHighlight}
             />
           )}
         </div>

@@ -8,9 +8,11 @@ interface ToolbarProps {
   onSizeDecrease: () => void;
   view: 'grid' | 'transposed';
   onViewChange: (view: 'grid' | 'transposed') => void;
+  weekendHighlight: boolean;
+  onToggleWeekendHighlight: () => void;
 }
 
-export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDecrease, view, onViewChange }: ToolbarProps) {
+export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDecrease, view, onViewChange, weekendHighlight, onToggleWeekendHighlight }: ToolbarProps) {
   return (
     <div style={{
       display: 'flex',
@@ -24,6 +26,10 @@ export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDe
       <span style={{ fontWeight: 600, fontSize: '1.1rem', minWidth: '4ch', textAlign: 'center' }}>{year}</span>
       <button onClick={onNext} style={btnStyle}>›</button>
       <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem', cursor: 'pointer', marginRight: '0.2rem' }}>
+          <input type="checkbox" checked={weekendHighlight} onChange={onToggleWeekendHighlight} />
+          Wknd
+        </label>
         <button onClick={onSizeDecrease} style={btnStyle}>−</button>
         <button onClick={onSizeIncrease} style={btnStyle}>+</button>
         <div style={{ display: 'flex', border: '1px solid #ccc', borderRadius: 4, overflow: 'hidden', marginLeft: '0.4rem' }}>

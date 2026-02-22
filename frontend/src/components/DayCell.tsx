@@ -12,6 +12,7 @@ interface DayCellProps {
   onMouseEnter?: (rect: DOMRect) => void;
   onMouseLeave?: () => void;
   label?: string;
+  weekendHighlight?: boolean;
 }
 
 function getDayRole(event: { startDate: string; endDate: string }, date: Date): 'start' | 'middle' | 'end' {
@@ -21,7 +22,7 @@ function getDayRole(event: { startDate: string; endDate: string }, date: Date): 
   return 'middle';
 }
 
-export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label }: DayCellProps) {
+export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, weekendHighlight }: DayCellProps) {
   const [isHovered, setIsHovered] = useState(false);
   const dateKey = fmtDayKey(date);
 
@@ -145,7 +146,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           zIndex: 2, pointerEvents: 'none',
         }} />
       )}
-      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: label ? '0.6rem' : '0.75rem', textAlign: label ? 'center' : 'left', fontWeight: (date.getDay() === 0 || date.getDay() === 6) ? 700 : 400 }}>
+      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: label ? '0.6rem' : '0.75rem', textAlign: label ? 'center' : 'left', fontWeight: (weekendHighlight && (date.getDay() === 0 || date.getDay() === 6)) ? 700 : 400 }}>
         {label ?? date.getDate()}
       </div>
     </td>
