@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { layoutEvents } from '../lib/layout.js';
 import { fmtDayKey, isMultiDay } from '../lib/calendarUtils.js';
 import type { EventDataItem } from '../lib/calendarUtils.js';
@@ -21,6 +22,7 @@ function getDayRole(event: { startDate: string; endDate: string }, date: Date): 
 }
 
 export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label }: DayCellProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const dateKey = fmtDayKey(date);
 
   const trueAllDayEvents    = events.filter(e => e.calendarEvent.allDay);
@@ -111,10 +113,10 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
 
   return (
     <td
-      style={{ position: 'relative', width: cellSize, height: cellSize, cursor: 'pointer', padding: 0 }}
+      style={{ position: 'relative', width: cellSize, height: cellSize, cursor: 'pointer', padding: 0, background: isHovered ? '#e8e8e8' : '#fafafa' }}
       onClick={onClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+      onMouseEnter={() => { setIsHovered(true); onMouseEnter?.(); }}
+      onMouseLeave={() => { setIsHovered(false); onMouseLeave?.(); }}
     >
       {allDayBars.map(b => (
         <div key={b.key} style={{
