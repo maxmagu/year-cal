@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { layoutEvents } from '../lib/layout.js';
 import { fmtDayKey, isMultiDay } from '../lib/calendarUtils.js';
 import type { EventDataItem } from '../lib/calendarUtils.js';
 
@@ -47,64 +46,6 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
     });
   })();
 
-  // Multi-day timed event bars (vertically clipped)
-  const mdBars = (() => {
-    if (multiDayTimedEvents.length === 0) return [];
-    return multiDayTimedEvents.map((e, i) => {
-      const role  = getDayRole(e.calendarEvent, date);
-      const start = new Date(e.calendarEvent.startDate);
-      const end   = new Date(e.calendarEvent.endDate);
-      const startPct = (start.getHours() * 60 + start.getMinutes()) / 1440 * 100;
-      const endPct   = Math.max((end.getHours() * 60 + end.getMinutes()) / 1440 * 100, 8);
-      const topPct    = role === 'start' ? startPct : 0;
-      const heightPct = role === 'start' ? 100 - startPct : role === 'end' ? endPct : 100;
-      const r = 3;
-      const dayAfterStart = new Date(start); dayAfterStart.setDate(dayAfterStart.getDate() + 1);
-      const dayBeforeEnd  = new Date(end);   dayBeforeEnd.setDate(dayBeforeEnd.getDate() - 1);
-      const isFirstMiddle = role === 'middle' && fmtDayKey(dayAfterStart) === fmtDayKey(date);
-      const isLastMiddle  = role === 'middle' && fmtDayKey(dayBeforeEnd)  === fmtDayKey(date);
-      const borderRadius = role === 'start'               ? `${r}px 0 0 ${r}px`
-                         : role === 'end'                 ? `0 ${r}px ${r}px 0`
-                         : (isFirstMiddle && isLastMiddle)? `${r}px 0 ${r}px 0`
-                         : isFirstMiddle                  ? `${r}px 0 0 0`
-                         : isLastMiddle                   ? `0 0 ${r}px 0`
-                         :                                  '0';
-      return {
-        key: i,
-        top: `${topPct.toFixed(1)}%`,
-        height: `${heightPct.toFixed(1)}%`,
-        background: e.color ?? '#888',
-        borderRadius,
-      };
-    });
-  })();
-
-  // Single-day timed event bars
-  const timedBars = (() => {
-    if (timedEvents.length === 0) return [];
-    const tdRanges = timedEvents.map(e => {
-      const start    = new Date(e.calendarEvent.startDate);
-      const end      = new Date(e.calendarEvent.endDate);
-      const startMin = start.getHours() * 60 + start.getMinutes();
-      const endMin   = end.getHours()   * 60 + end.getMinutes();
-      return { startMin, endMin: endMin > startMin ? endMin : startMin + 60 };
-    });
-    const tdLayout = layoutEvents(tdRanges);
-    return timedEvents.map((_, i) => {
-      const { startMin, endMin } = tdRanges[i];
-      const { col, totalCols }   = tdLayout[i];
-      const barWidthPct          = 100 / totalCols;
-      const durationMin          = endMin - startMin;
-      return {
-        key: i,
-        top: `${(startMin / 1440 * 100).toFixed(1)}%`,
-        height: `${Math.max(durationMin / 1440 * 100, 12).toFixed(1)}%`,
-        left: `${(col * barWidthPct).toFixed(1)}%`,
-        width: `${barWidthPct.toFixed(1)}%`,
-        background: timedEvents[i].color ?? '#888',
-      };
-    });
-  })();
 
   return (
     <td
@@ -121,23 +62,17 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           pointerEvents: 'none',
         }} />
       ))}
-      {mdBars.map(b => (
-        <div key={b.key} style={{
-          position: 'absolute',
-          top: b.top, height: b.height, left: 0, width: '100%',
-          background: b.background, borderRadius: b.borderRadius,
-          opacity: 0.7, pointerEvents: 'none',
-        }} />
-      ))}
-      {timedBars.map(b => (
-        <div key={b.key} style={{
-          position: 'absolute',
-          top: b.top, height: b.height,
-          left: `calc(${b.left} + 2px)`, width: `calc(${b.width} - 4px)`,
-          background: b.background,
-          opacity: 0.5, borderRadius: 3, pointerEvents: 'none',
-        }} />
-      ))}
+      {(multiDayTimedEvents.length > 0 || timedEvents.length > 0) && (
+        <div style={{
+          position: 'absolute', bottom: 3, left: 0, right: 0,
+          display: 'flex', justifyContent: 'center', gap: 2,
+          pointerEvents: 'none', zIndex: 1,
+        }}>
+          {[...multiDayTimedEvents, ...timedEvents].map((e, i) => (
+            <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />
+          ))}
+        </div>
+      )}
       {isToday && (
         <div style={{
           position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
