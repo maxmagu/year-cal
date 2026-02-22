@@ -5,6 +5,7 @@ import { fmtDayKey } from '../lib/calendarUtils.js';
 import type { EventDataItem } from '../lib/calendarUtils.js';
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DOW = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 interface TransposedViewProps {
   year: number;
@@ -80,6 +81,7 @@ export default function TransposedView({ year, cellSize, eventsByDay, todayKey, 
                     isToday={fmtDayKey(date) === todayKey}
                     cellSize={cellSize}
                     onClick={() => onDayClick(date)}
+                    label={DOW[date.getDay()]}
                     onMouseEnter={() => setHovered({ m, day })}
                   />
                 );

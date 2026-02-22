@@ -10,6 +10,7 @@ interface DayCellProps {
   onClick: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  label?: string;
 }
 
 function getDayRole(event: { startDate: string; endDate: string }, date: Date): 'start' | 'middle' | 'end' {
@@ -19,7 +20,7 @@ function getDayRole(event: { startDate: string; endDate: string }, date: Date): 
   return 'middle';
 }
 
-export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave }: DayCellProps) {
+export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label }: DayCellProps) {
   const dateKey = fmtDayKey(date);
 
   const trueAllDayEvents    = events.filter(e => e.calendarEvent.allDay);
@@ -147,8 +148,8 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           zIndex: 2, pointerEvents: 'none',
         }} />
       )}
-      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: '0.75rem' }}>
-        {date.getDate()}
+      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: label ? '0.6rem' : '0.75rem' }}>
+        {label ?? date.getDate()}
       </div>
     </td>
   );
