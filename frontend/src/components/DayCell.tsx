@@ -49,15 +49,6 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
   // Multi-day timed event bars (vertically clipped)
   const mdBars = (() => {
     if (multiDayTimedEvents.length === 0) return [];
-    const mdRanges = multiDayTimedEvents.map(e => {
-      const role  = getDayRole(e.calendarEvent, date);
-      const start = new Date(e.calendarEvent.startDate);
-      const end   = new Date(e.calendarEvent.endDate);
-      const startMin = role === 'start' ? start.getHours() * 60 + start.getMinutes() : 0;
-      const endMin   = role === 'end'   ? end.getHours()   * 60 + end.getMinutes()   : 1440;
-      return { startMin, endMin };
-    });
-    const mdLayout = layoutEvents(mdRanges);
     return multiDayTimedEvents.map((e, i) => {
       const role  = getDayRole(e.calendarEvent, date);
       const start = new Date(e.calendarEvent.startDate);
@@ -66,8 +57,6 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const endPct   = Math.max((end.getHours() * 60 + end.getMinutes()) / 1440 * 100, 8);
       const topPct    = role === 'start' ? startPct : 0;
       const heightPct = role === 'start' ? 100 - startPct : role === 'end' ? endPct : 100;
-      const { col, totalCols } = mdLayout[i];
-      const barWidthPct = 100 / totalCols;
       const r = 3;
       const dayAfterStart = new Date(start); dayAfterStart.setDate(dayAfterStart.getDate() + 1);
       const dayBeforeEnd  = new Date(end);   dayBeforeEnd.setDate(dayBeforeEnd.getDate() - 1);
@@ -83,8 +72,6 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
         key: i,
         top: `${topPct.toFixed(1)}%`,
         height: `${heightPct.toFixed(1)}%`,
-        left: `${(col * barWidthPct).toFixed(1)}%`,
-        width: `${barWidthPct.toFixed(1)}%`,
         background: e.color ?? '#888',
         borderRadius,
       };
@@ -136,8 +123,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       {mdBars.map(b => (
         <div key={b.key} style={{
           position: 'absolute',
-          top: b.top, height: b.height,
-          left: `calc(${b.left} + 2px)`, width: `calc(${b.width} - 4px)`,
+          top: b.top, height: b.height, left: 0, width: '100%',
           background: b.background, borderRadius: b.borderRadius,
           opacity: 0.7, pointerEvents: 'none',
         }} />
