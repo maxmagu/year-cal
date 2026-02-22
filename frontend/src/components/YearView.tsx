@@ -13,9 +13,10 @@ export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayC
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: `repeat(auto-fill, minmax(${cellSize * 7 + 20}px, 1fr))`,
+      gridTemplateColumns: `repeat(auto-fill, ${cellSize * 7 + 20}px)`,
       alignItems: 'start',
       rowGap: `${Math.round(cellSize * 0.6)}px`,
+      columnGap: `${Math.round(cellSize * 0.6)}px`,
       padding: '1rem',
     }}>
       {Array.from({ length: 12 }, (_, m) => (
