@@ -1,0 +1,17 @@
+{
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently --names \"back,front\" -c \"blue,green\" \"npm run dev -w backend\" \"npm run dev -w frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "backend": "file:backend",
+    "frontend": "file:frontend"
+  }
+}
