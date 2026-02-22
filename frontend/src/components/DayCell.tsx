@@ -145,7 +145,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           zIndex: 2, pointerEvents: 'none',
         }} />
       )}
-      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: label ? '0.6rem' : '0.75rem' }}>
+      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: label ? '0.6rem' : '0.75rem', textAlign: label ? 'center' : 'left' }}>
         {label ?? date.getDate()}
       </div>
     </td>
