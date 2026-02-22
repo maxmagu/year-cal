@@ -127,7 +127,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
     >
       {allDayBars.map(b => (
         <div key={b.key} style={{
-          position: 'absolute', top: 0, height: '100%',
+          position: 'absolute', top: 1, height: 'calc(100% - 2px)',
           left: b.left, width: b.width,
           background: b.background, borderRadius: b.borderRadius,
           pointerEvents: 'none',
