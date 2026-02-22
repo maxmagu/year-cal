@@ -8,6 +8,8 @@ interface DayCellProps {
   isToday: boolean;
   cellSize: number;
   onClick: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 function getDayRole(event: { startDate: string; endDate: string }, date: Date): 'start' | 'middle' | 'end' {
@@ -17,7 +19,7 @@ function getDayRole(event: { startDate: string; endDate: string }, date: Date): 
   return 'middle';
 }
 
-export default function DayCell({ date, events, isToday, cellSize, onClick }: DayCellProps) {
+export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave }: DayCellProps) {
   const dateKey = fmtDayKey(date);
 
   const trueAllDayEvents    = events.filter(e => e.calendarEvent.allDay);
@@ -110,6 +112,8 @@ export default function DayCell({ date, events, isToday, cellSize, onClick }: Da
     <td
       style={{ position: 'relative', width: cellSize, height: cellSize, cursor: 'pointer', padding: 0 }}
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {allDayBars.map(b => (
         <div key={b.key} style={{
