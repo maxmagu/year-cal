@@ -4,6 +4,8 @@ interface CalendarSidebarProps {
   calendars: CalendarInfo[];
   selected: Set<string>;
   onToggle: (url: string) => void;
+  onlyMultiDay: boolean;
+  onToggleOnlyMultiDay: () => void;
 }
 
 const sectionLabel: React.CSSProperties = {
@@ -34,7 +36,7 @@ function CalendarList({ calendars, selected, onToggle }: CalendarSidebarProps) {
   );
 }
 
-export default function CalendarSidebar({ calendars, selected, onToggle }: CalendarSidebarProps) {
+export default function CalendarSidebar({ calendars, selected, onToggle, onlyMultiDay, onToggleOnlyMultiDay }: CalendarSidebarProps) {
   const veventCals = calendars.filter((c) => c.components.includes('VEVENT'));
   const vtodoCals = calendars.filter((c) => c.components.includes('VTODO'));
 
@@ -47,6 +49,14 @@ export default function CalendarSidebar({ calendars, selected, onToggle }: Calen
       background: '#fafafa',
       flexShrink: 0,
     }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 0', cursor: 'pointer', fontSize: '0.875rem', marginBottom: '1rem' }}>
+        <input
+          type="checkbox"
+          checked={onlyMultiDay}
+          onChange={onToggleOnlyMultiDay}
+        />
+        <span>Only multi-day events</span>
+      </label>
       {veventCals.length > 0 && (
         <>
           <div style={sectionLabel}>Calendars</div>

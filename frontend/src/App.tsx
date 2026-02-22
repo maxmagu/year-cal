@@ -155,6 +155,7 @@ export default function App() {
   const [calendars, setCalendars] = useState<CalendarInfo[]>([]);
   const [selectedCalendarUrls, setSelectedCalendarUrls] = useState<Set<string>>(new Set());
   const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
+  const [onlyMultiDay, setOnlyMultiDay] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -168,7 +169,9 @@ export default function App() {
 
   const calendarColors = new Map(calendars.map((c) => [c.url, c.color]));
 
-  const visibleEvents = allEvents.filter((e) => selectedCalendarUrls.has(e.calendarUrl));
+  const visibleEvents = allEvents.filter((e) =>
+    selectedCalendarUrls.has(e.calendarUrl) && (!onlyMultiDay || isMultiDay(e))
+  );
 
   const dataSource: EventDataItem[] = visibleEvents.map((e) => ({
     ...e,
@@ -309,6 +312,8 @@ export default function App() {
           calendars={calendars}
           selected={selectedCalendarUrls}
           onToggle={toggleCalendar}
+          onlyMultiDay={onlyMultiDay}
+          onToggleOnlyMultiDay={() => setOnlyMultiDay(v => !v)}
         />
         <div className="content">
           {loading ? (
