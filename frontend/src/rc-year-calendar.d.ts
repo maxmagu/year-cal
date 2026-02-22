@@ -24,6 +24,7 @@ declare module 'rc-year-calendar' {
     weekStart?: number;
     onDayClick?: (e: CalendarDayEventObject<T>) => void;
     customDataSourceRenderer?: (element: HTMLElement, date: Date, events: T[]) => void;
+    customDayRenderer?: (element: HTMLElement, date: Date) => void;
   }
 
   const Calendar: ComponentType<CalendarProps>;

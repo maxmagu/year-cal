@@ -34,6 +34,18 @@ function getDayRole(event: CalendarEvent, date: Date): 'start' | 'middle' | 'end
   return 'middle';
 }
 
+const _today = new Date();
+
+function todayRenderer(elt: HTMLElement, date: Date) {
+  if (
+    date.getFullYear() === _today.getFullYear() &&
+    date.getMonth()    === _today.getMonth()    &&
+    date.getDate()     === _today.getDate()
+  ) {
+    (elt.parentElement as HTMLElement).classList.add('day-today');
+  }
+}
+
 function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem[]) {
   const parent = elt.parentElement as HTMLElement;
 
@@ -309,6 +321,7 @@ export default function App() {
               dataSource={dataSource}
               style="custom"
               customDataSourceRenderer={multiColorRenderer}
+              customDayRenderer={todayRenderer}
               displayHeader={false}
               weekStart={1}
               onDayClick={handleDayClick}
@@ -343,6 +356,7 @@ export default function App() {
         .content { flex: 1; overflow: auto; display: flex; flex-direction: column; }
         .status { padding: 2rem; text-align: center; color: #666; }
         .error { color: #e74c3c; }
+        .day-today { box-shadow: inset 0 0 0 2px #e74c3c; border-radius: 50%; }
       `}</style>
     </div>
   );
