@@ -49,6 +49,10 @@ function todayRenderer(elt: HTMLElement, date: Date) {
 function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem[]) {
   const parent = elt.parentElement as HTMLElement;
 
+  // Remove bars from any previous render of this cell
+  parent.querySelectorAll('.ev-bar').forEach((el) => el.remove());
+  parent.style.background = '';
+
   const trueAllDayEvents    = events.filter((e) => e.calendarEvent.allDay);
   const multiDayTimedEvents = events.filter((e) => !e.calendarEvent.allDay && isMultiDay(e.calendarEvent));
   const timedEvents         = events.filter((e) => !e.calendarEvent.allDay && !isMultiDay(e.calendarEvent));
@@ -108,6 +112,7 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
         'opacity:0.7',
         'pointer-events:none',
       ].join(';');
+      bar.className = 'ev-bar';
       parent.insertBefore(bar, elt);
     });
   }
@@ -145,6 +150,7 @@ function multiColorRenderer(elt: HTMLElement, _date: Date, events: EventDataItem
         'pointer-events:none',
         'border-radius:1px',
       ].join(';');
+      bar.className = 'ev-bar';
       parent.insertBefore(bar, elt);
     });
   }
@@ -239,18 +245,25 @@ export default function App() {
     // Use local date components — toISOString() would shift to UTC and may change the date.
     const d = e.date;
     const isoDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-    if (e.events.length === 0) {
+
+    // Query our own dataSource instead of relying on e.events from the library,
+    // whose internal _dataSource can drift out of sync with what was rendered.
+    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const dayEnd   = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+    const onDay = dataSource.filter(ev => ev.startDate < dayEnd && ev.endDate >= dayStart);
+
+    if (onDay.length === 0) {
       setModalEvent(null);
       setModalDefaultDate(isoDate);
       setModalOpen(true);
-    } else if (e.events.length === 1) {
-      const ev = e.events[0].calendarEvent;
+    } else if (onDay.length === 1) {
+      const ev = onDay[0].calendarEvent;
       setModalEvent(ev);
       setModalDefaultDate(ev.startDate.slice(0, 10));
       setModalOpen(true);
     } else {
       setDayViewDate(d);
-      setDayViewEvents(e.events.map(ev => ({ calendarEvent: ev.calendarEvent, color: ev.color as string | undefined })));
+      setDayViewEvents(onDay.map(ev => ({ calendarEvent: ev.calendarEvent, color: ev.color as string | undefined })));
       setDayViewOpen(true);
     }
   }
