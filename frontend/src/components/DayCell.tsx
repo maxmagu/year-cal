@@ -60,7 +60,10 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
                          : isFirstMiddle                   ? `${r}px 0 0 0`
                          : isLastMiddle                    ? `0 0 ${r}px 0`
                          :                                   '0';
-      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius };
+      // Bleed 1px past the cell edge on open sides to cover the borderSpacing gap
+      const bleedLeft  = role === 'start' ? 0 : 1;
+      const bleedRight = role === 'end'   ? 0 : 1;
+      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight };
     });
   })();
 
@@ -77,7 +80,12 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
                          : isStartDay               ? `${r}px 0 0 ${r}px`
                          : isEndDay                 ? `0 ${r}px ${r}px 0`
                          :                            '0';
-      return { key: i, left: `${(i * colWidthPct).toFixed(1)}%`, width: `${colWidthPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius };
+      // Bleed 1px past the cell edge on open sides to cover the borderSpacing gap
+      const bleedLeft  = isStartDay ? 0 : 1;
+      const bleedRight = isEndDay   ? 0 : 1;
+      const left  = `calc(${(i * colWidthPct).toFixed(1)}% - ${bleedLeft}px)`;
+      const width = `calc(${colWidthPct.toFixed(1)}% + ${bleedLeft + bleedRight}px)`;
+      return { key: i, left, width, background: e.color ?? '#888', borderRadius };
     });
   })();
 
@@ -99,23 +107,31 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       ))}
       {mdBars.map(b => (
         <div key={b.key} style={{
-          position: 'absolute', left: 0, right: 0,
+          position: 'absolute', left: -b.bleedLeft, right: -b.bleedRight,
           top: b.top, height: b.height,
           background: b.background, borderRadius: b.borderRadius,
           pointerEvents: 'none', zIndex: 1,
         }} />
       ))}
-      {timedEvents.length > 0 && (
-        <div style={{
-          position: 'absolute', bottom: 3, left: 0, right: 0,
-          display: 'flex', justifyContent: 'center', gap: 2,
-          pointerEvents: 'none', zIndex: 1,
-        }}>
-          {timedEvents.map((e, i) => (
-            <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />
-          ))}
-        </div>
-      )}
+      {/* Dots anchored bottom-right, max 3 per row, rows grow upward */}
+      {timedEvents.length > 0 && (() => {
+        const COLS = 3;
+        // Build rows bottom-up: last events go in the bottom row
+        const chunks: EventDataItem[][] = [];
+        for (let i = timedEvents.length; i > 0; i -= COLS)
+          chunks.push(timedEvents.slice(Math.max(0, i - COLS), i));
+        // chunks[0] = bottom row; reverse to render top-down
+        chunks.reverse();
+        return (
+          <div style={{ position: 'absolute', bottom: 3, right: 3, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, pointerEvents: 'none', zIndex: 1 }}>
+            {chunks.map((row, ri) => (
+              <div key={ri} style={{ display: 'flex', gap: 2 }}>
+                {row.map((e, i) => <div key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />)}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
       {/* Today indicator: inset ring so it doesn't affect layout */}
       {isToday && (
         <div style={{
@@ -125,7 +141,13 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           zIndex: 2, pointerEvents: 'none',
         }} />
       )}
-      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: label ? '0.6rem' : '0.75rem', textAlign: 'center', fontWeight: (weekendHighlight && (date.getDay() === 0 || date.getDay() === 6)) ? 700 : 400 }}>
+      {/* Date/label — top-left corner, above everything */}
+      <div style={{
+        position: 'absolute', top: 4, left: 5,
+        fontSize: '0.65rem', lineHeight: 1,
+        fontWeight: (weekendHighlight && (date.getDay() === 0 || date.getDay() === 6)) ? 700 : 400,
+        zIndex: 3, pointerEvents: 'none',
+      }}>
         {label ?? date.getDate()}
       </div>
     </td>

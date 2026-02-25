@@ -26,7 +26,7 @@ export default function MonthGrid({ year, month, cellSize, eventsByDay, todayKey
   }
 
   return (
-    <table style={{ borderCollapse: 'collapse' }}>
+    <table style={{ borderCollapse: 'separate', borderSpacing: 2 }}>
       <thead>
         <tr>
           <th colSpan={7} style={{ fontSize: '0.85rem', padding: '4px 0', textAlign: 'center', fontWeight: 600 }}>
@@ -35,7 +35,7 @@ export default function MonthGrid({ year, month, cellSize, eventsByDay, todayKey
         </tr>
         <tr>
           {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
-            <th key={i} style={{ width: cellSize, fontSize: '0.7rem', color: '#aaa', fontWeight: 400, textAlign: 'center', padding: '2px 0' }}>
+            <th key={i} style={{ width: cellSize, fontSize: '0.7rem', color: '#aaa', fontWeight: 400, textAlign: 'left', paddingLeft: 5, padding: '2px 0 2px 5px' }}>
               {d}
             </th>
           ))}
