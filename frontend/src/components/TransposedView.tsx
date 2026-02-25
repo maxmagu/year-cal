@@ -1,3 +1,5 @@
+// Transposed calendar view: months as rows, day-of-month (1–31) as columns.
+// Invalid dates (e.g. Feb 30) are rendered as grey empty cells.
 import { useState } from 'react';
 import type React from 'react';
 import DayCell from './DayCell.js';
@@ -18,10 +20,12 @@ interface TransposedViewProps {
 }
 
 function isValidDate(year: number, month: number, day: number): boolean {
+  // If the constructed Date rolls over to a different month, the day doesn't exist
   return new Date(year, month, day).getMonth() === month;
 }
 
 export default function TransposedView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight }: TransposedViewProps) {
+  // Track hovered (month, day) to cross-highlight the row label and column header
   const [hovered, setHovered] = useState<{ m: number; day: number } | null>(null);
 
   const stickyRowStyle: React.CSSProperties = {
@@ -66,16 +70,16 @@ export default function TransposedView({ year, cellSize, eventsByDay, todayKey, 
       <table style={{ borderCollapse: 'collapse' }} onMouseLeave={handleMouseLeave}>
         <thead>
           <tr>
-            {/* corner */}
+            {/* Corner cell — sticky on both axes (zIndex 3 > row labels 1, col headers 2) */}
             <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 3, background: '#fafafa', width: '2rem', minWidth: '2rem' }} />
-            {/* day-number headers: 1–31 */}
+            {/* Day-of-month headers: 1–31 */}
             {Array.from({ length: 31 }, (_, i) => (
               <th key={i} style={{ ...headerCellStyle, ...(hovered?.day === i + 1 ? hlStyle : {}) }}>{i + 1}</th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {/* one row per month */}
+          {/* One row per month */}
           {MONTH_SHORT.map((name, m) => (
             <tr key={m} style={{ borderTop: `${Math.round(cellSize * 0.07)}px solid transparent` }}>
               <td style={{ ...stickyRowStyle, ...(hovered?.m === m ? hlStyle : {}) }}>{name}</td>

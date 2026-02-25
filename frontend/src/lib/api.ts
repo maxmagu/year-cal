@@ -1,3 +1,5 @@
+// Typed wrappers around the backend REST API.
+// All requests go through Vite's /api proxy → http://localhost:3000.
 import type { CalendarInfo, CalendarEvent, CreateEventPayload, UpdateEventPayload } from './types.js';
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {

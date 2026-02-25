@@ -10,10 +10,11 @@ interface DayCellProps {
   onClick: () => void;
   onMouseEnter?: (rect: DOMRect) => void;
   onMouseLeave?: () => void;
-  label?: string;
+  label?: string;          // overrides date number (used by TransposedView for DOW letter)
   weekendHighlight?: boolean;
 }
 
+// Returns where this date falls within a multi-day event's span.
 function getDayRole(event: { startDate: string; endDate: string }, date: Date): 'start' | 'middle' | 'end' {
   const dateKey = fmtDayKey(date);
   if (fmtDayKey(new Date(event.startDate)) === dateKey) return 'start';
@@ -25,11 +26,16 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
   const [isHovered, setIsHovered] = useState(false);
   const dateKey = fmtDayKey(date);
 
+  // Three visual categories with different rendering:
+  //   trueAllDayEvents    → full-height background fills (with rounded caps at start/end)
+  //   multiDayTimedEvents → full-width vertical bars clipped to start/end time on boundary days
+  //   timedEvents         → dots at the bottom of the cell
   const trueAllDayEvents    = events.filter(e => e.calendarEvent.allDay);
   const multiDayTimedEvents = events.filter(e => !e.calendarEvent.allDay && isMultiDay(e.calendarEvent));
   const timedEvents         = events.filter(e => !e.calendarEvent.allDay && !isMultiDay(e.calendarEvent));
 
-  // Multi-day timed event bars (vertically clipped, full width)
+  // Multi-day timed event bars: full width, vertically clipped by time on the first and last day.
+  // Middle days fill the entire cell height.
   const mdBars = (() => {
     if (multiDayTimedEvents.length === 0) return [];
     return multiDayTimedEvents.map((e, i) => {
@@ -40,11 +46,14 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const endPct   = Math.max((end.getHours() * 60 + end.getMinutes()) / 1440 * 100, 8);
       const topPct    = role === 'start' ? startPct : 0;
       const heightPct = role === 'start' ? 100 - startPct : role === 'end' ? endPct : 100;
+
+      // Round only the "outer" corners of each day's slice so the bar looks continuous
+      // across days. Middle days adjacent to start/end get one rounded corner each.
       const r = 3;
       const dayAfterStart = new Date(start); dayAfterStart.setDate(dayAfterStart.getDate() + 1);
       const dayBeforeEnd  = new Date(end);   dayBeforeEnd.setDate(dayBeforeEnd.getDate() - 1);
-      const isFirstMiddle = role === 'middle' && fmtDayKey(dayAfterStart) === fmtDayKey(date);
-      const isLastMiddle  = role === 'middle' && fmtDayKey(dayBeforeEnd)  === fmtDayKey(date);
+      const isFirstMiddle = role === 'middle' && fmtDayKey(dayAfterStart) === dateKey;
+      const isLastMiddle  = role === 'middle' && fmtDayKey(dayBeforeEnd)  === dateKey;
       const borderRadius = role === 'start'                ? `${r}px 0 0 ${r}px`
                          : role === 'end'                  ? `0 ${r}px ${r}px 0`
                          : (isFirstMiddle && isLastMiddle) ? `${r}px 0 ${r}px 0`
@@ -55,7 +64,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
     });
   })();
 
-  // All-day background fills
+  // All-day background fills: split cell width evenly when multiple overlap.
   const allDayBars = (() => {
     const n = trueAllDayEvents.length;
     if (n === 0) return [];
@@ -107,6 +116,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           ))}
         </div>
       )}
+      {/* Today indicator: inset ring so it doesn't affect layout */}
       {isToday && (
         <div style={{
           position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,

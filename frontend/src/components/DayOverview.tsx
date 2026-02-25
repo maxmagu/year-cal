@@ -3,7 +3,7 @@ import type { EventDataItem } from '../lib/calendarUtils.js';
 const DOW   = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const WIDTH = 180;
-const GAP   = 8;
+const GAP   = 8; // px between popover and anchor cell
 
 function formatDate(d: Date): string {
   return `${DOW[d.getDay()]} ${d.getDate()} ${MONTH[d.getMonth()]}`;
@@ -17,16 +17,18 @@ function formatTime(iso: string): string {
 interface DayOverviewProps {
   date: Date;
   events: EventDataItem[];
-  anchorRect: DOMRect;
+  anchorRect: DOMRect; // bounding rect of the hovered day cell
 }
 
 export default function DayOverview({ date, events, anchorRect }: DayOverviewProps) {
+  // Prefer left of cell; fall back to right if there isn't enough room
   const left = anchorRect.left - WIDTH - GAP >= 0
     ? anchorRect.left - WIDTH - GAP
     : anchorRect.right + GAP;
 
   const top = Math.min(anchorRect.top, window.innerHeight - 40);
 
+  // All-day events first, then by start time
   const sorted = [...events].sort((a, b) => {
     if (a.calendarEvent.allDay !== b.calendarEvent.allDay) return a.calendarEvent.allDay ? -1 : 1;
     return a.calendarEvent.startDate.localeCompare(b.calendarEvent.startDate);

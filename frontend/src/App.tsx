@@ -101,6 +101,8 @@ export default function App() {
     });
   }
 
+  // Year navigation always fetches all calendars (not just selected ones) so
+  // that toggling a calendar visibility never requires a network round-trip.
   const allCalendarUrls = new Set(calendars.map(c => c.url));
 
   function prevYear() {

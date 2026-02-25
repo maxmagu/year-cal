@@ -15,8 +15,11 @@ interface DayViewProps {
   onClose: () => void;
 }
 
-const HOUR_PX = 44;
+const HOUR_PX = 44; // pixels per hour in the timeline
 
+// Returns the start/end minutes for this event *on the given day*.
+// Multi-day events are clipped: midnight (0) at the start of day if the event
+// began earlier, 1440 (end of day) if it continues past midnight.
 function getMinutesForDay(event: CalendarEvent, date: Date): { startMin: number; endMin: number } {
   const fmt = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
   const start = new Date(event.startDate);
