@@ -125,7 +125,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           zIndex: 2, pointerEvents: 'none',
         }} />
       )}
-      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: label ? '0.6rem' : '0.75rem', textAlign: label ? 'center' : 'left', fontWeight: (weekendHighlight && (date.getDay() === 0 || date.getDay() === 6)) ? 700 : 400 }}>
+      <div style={{ position: 'relative', zIndex: 1, padding: `${Math.round(cellSize / 4)}px 6px`, fontSize: label ? '0.6rem' : '0.75rem', textAlign: 'center', fontWeight: (weekendHighlight && (date.getDay() === 0 || date.getDay() === 6)) ? 700 : 400 }}>
         {label ?? date.getDate()}
       </div>
     </td>
