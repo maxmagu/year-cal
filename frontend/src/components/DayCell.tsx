@@ -103,7 +103,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           pointerEvents: 'none', zIndex: 1,
         }}>
           {timedEvents.map((e, i) => (
-            <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />
+            <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />
           ))}
         </div>
       )}
