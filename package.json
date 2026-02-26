@@ -1,6 +1,11 @@
 {
+  "name": "yearcal",
   "private": true,
   "type": "module",
+  "main": "app.js",
+  "engines": {
+    "node": ">=20"
+  },
   "workspaces": [
     "backend",
     "frontend"
@@ -16,6 +21,7 @@
   },
   "dependencies": {
     "backend": "file:backend",
-    "frontend": "file:frontend"
+    "frontend": "file:frontend",
+    "express": "^4.21.0"
   }
 }
