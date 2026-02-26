@@ -12,10 +12,20 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "typescript": "^5.5.4",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.9.3",
     "vite": "^5.3.5"
-  }
+  },
+  "bundleDependencies": [
+    "@types/react",
+    "@types/react-dom",
+    "@vitejs/plugin-react",
+    "prop-types",
+    "react",
+    "react-dom",
+    "typescript",
+    "vite"
+  ]
 }
