@@ -4,9 +4,10 @@ import { config } from './config.js';
 
 async function main() {
   await initClient();
-  const app = await buildServer();
-  await app.listen({ port: config.port, host: '0.0.0.0' });
-  console.log(`Listening on port ${config.port}`);
+  const app = buildServer();
+  app.listen(config.port, '0.0.0.0', () => {
+    console.log(`Listening on port ${config.port}`);
+  });
 }
 
 main().catch((err) => {
