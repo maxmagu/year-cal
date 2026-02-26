@@ -1,1 +1,1 @@
-import './backend/dist/index.js';
+import('./backend/dist/index.js');
