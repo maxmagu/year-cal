@@ -1,7 +1,6 @@
 {
   "name": "yearcal",
   "private": true,
-  "type": "module",
   "main": "app.js",
   "engines": {
     "node": ">=20"

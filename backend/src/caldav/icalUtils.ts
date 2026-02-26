@@ -1,6 +1,6 @@
 import ICAL from 'ical.js';
 import icalGenerator from 'ical-generator';
-import type { CalendarEvent } from '../types/index.js';
+import type { CalendarEvent } from '../types/index';
 
 export function parseICalEvent(
   icsData: string,

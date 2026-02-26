@@ -1,6 +1,6 @@
-import { initClient } from './caldav/client.js';
-import { buildServer } from './server.js';
-import { config } from './config.js';
+import { initClient } from './caldav/client';
+import { buildServer } from './server';
+import { config } from './config';
 
 async function main() {
   await initClient();

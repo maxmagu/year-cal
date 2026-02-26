@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import { getClient } from '../caldav/client.js';
-import { parseICalEvent, generateICalEvent } from '../caldav/icalUtils.js';
-import type { CalendarEvent, CreateEventBody, UpdateEventBody, DeleteEventBody } from '../types/index.js';
+import { getClient } from '../caldav/client';
+import { parseICalEvent, generateICalEvent } from '../caldav/icalUtils';
+import type { CalendarEvent, CreateEventBody, UpdateEventBody, DeleteEventBody } from '../types/index';
 
 export const eventsRouter = Router();
 

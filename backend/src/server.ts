@@ -1,13 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import { existsSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import { config } from './config.js';
-import { calendarsRouter } from './routes/calendars.js';
-import { eventsRouter } from './routes/events.js';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { join } from 'path';
+import { config } from './config';
+import { calendarsRouter } from './routes/calendars';
+import { eventsRouter } from './routes/events';
 
 export function buildServer() {
   const app = express();

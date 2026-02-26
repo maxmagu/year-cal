@@ -1,5 +1,5 @@
 import { DAVClient } from 'tsdav';
-import { config } from '../config.js';
+import { config } from '../config';
 
 let client: DAVClient | null = null;
 

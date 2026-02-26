@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { getClient } from '../caldav/client.js';
-import type { CalendarInfo } from '../types/index.js';
+import { getClient } from '../caldav/client';
+import type { CalendarInfo } from '../types/index';
 
 export const calendarsRouter = Router();
 
