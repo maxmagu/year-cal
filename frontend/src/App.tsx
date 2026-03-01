@@ -16,7 +16,8 @@ import DayOverview from './components/DayOverview.js';
 export default function App() {
   const isMobile = useIsMobile();
   const [year, setYear] = useState(new Date().getFullYear());
-  const [cellSize, setCellSize] = useState(38);
+  const defaultCellSize = useIsMobile() ? 22 : 38;
+  const [cellSize, setCellSize] = useState(defaultCellSize);
   const [view, setView] = useState<'grid' | 'transposed'>('grid');
   const [weekendHighlight, setWeekendHighlight] = useState(true);
   const [calendars, setCalendars] = useState<CalendarInfo[]>([]);
@@ -191,7 +192,7 @@ export default function App() {
   }
 
   // On mobile, use smaller default cell size
-  const effectiveCellSize = isMobile ? Math.min(cellSize, 22) : cellSize;
+  const effectiveCellSize = cellSize;
 
   return (
     <div className="app">

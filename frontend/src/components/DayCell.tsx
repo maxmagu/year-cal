@@ -126,7 +126,10 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           <div style={{ position: 'absolute', bottom: 3, right: 3, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, pointerEvents: 'none', zIndex: 1 }}>
             {chunks.map((row, ri) => (
               <div key={ri} style={{ display: 'flex', gap: 2 }}>
-                {row.map((e, i) => <div key={i} style={{ width: label ? 5 : 7, height: label ? 5 : 7, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />)}
+                {row.map((e, i) => {
+                  const dotSize = cellSize <= 26 ? 4 : label ? 5 : 7;
+                  return <div key={i} style={{ width: dotSize, height: dotSize, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />;
+                })}
               </div>
             ))}
           </div>
