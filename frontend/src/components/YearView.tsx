@@ -9,17 +9,21 @@ interface YearViewProps {
   onDayClick: (date: Date) => void;
   onDayHover: (date: Date | null, rect?: DOMRect) => void;
   weekendHighlight: boolean;
+  isMobile?: boolean;
 }
 
-export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight }: YearViewProps) {
+export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight, isMobile }: YearViewProps) {
+  const gap = isMobile ? Math.round(cellSize * 0.3) : Math.round(cellSize * 0.6);
+  const padding = isMobile ? '0.5rem' : '1rem';
+
   return (
     <div style={{
       display: 'grid',
       gridTemplateColumns: `repeat(auto-fill, ${cellSize * 7 + 20}px)`,
       alignItems: 'start',
-      rowGap: `${Math.round(cellSize * 0.6)}px`,
-      columnGap: `${Math.round(cellSize * 0.6)}px`,
-      padding: '1rem',
+      rowGap: `${gap}px`,
+      columnGap: `${gap}px`,
+      padding,
     }}>
       {Array.from({ length: 12 }, (_, m) => (
         <MonthGrid

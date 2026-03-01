@@ -3,6 +3,7 @@ import { api } from './lib/api.js';
 import type { CalendarInfo, CalendarEvent, CreateEventPayload, UpdateEventPayload } from './lib/types.js';
 import { fmtDayKey, isMultiDay } from './lib/calendarUtils.js';
 import type { EventDataItem } from './lib/calendarUtils.js';
+import useIsMobile from './hooks/useIsMobile.js';
 import Toolbar from './components/Toolbar.js';
 import CalendarSidebar from './components/CalendarSidebar.js';
 import EventModal from './components/EventModal.js';
@@ -13,6 +14,7 @@ import TransposedView from './components/TransposedView.js';
 import DayOverview from './components/DayOverview.js';
 
 export default function App() {
+  const isMobile = useIsMobile();
   const [year, setYear] = useState(new Date().getFullYear());
   const [cellSize, setCellSize] = useState(38);
   const [view, setView] = useState<'grid' | 'transposed'>('grid');
@@ -33,6 +35,8 @@ export default function App() {
   const [dayViewOpen, setDayViewOpen] = useState(false);
   const [dayViewDate, setDayViewDate] = useState<Date | null>(null);
   const [dayViewEvents, setDayViewEvents] = useState<DayViewEvent[]>([]);
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const calendarColors = new Map(calendars.map((c) => [c.url, c.color]));
 
@@ -125,7 +129,7 @@ export default function App() {
       setModalEvent(null);
       setModalDefaultDate(isoDate);
       setModalOpen(true);
-    } else if (onDay.length === 1) {
+    } else if (onDay.length === 1 && !isMobile) {
       const ev = onDay[0].calendarEvent;
       setModalEvent(ev);
       setModalDefaultDate(ev.startDate.slice(0, 10));
@@ -186,6 +190,9 @@ export default function App() {
     }
   }
 
+  // On mobile, use smaller default cell size
+  const effectiveCellSize = isMobile ? Math.min(cellSize, 22) : cellSize;
+
   return (
     <div className="app">
       <Toolbar
@@ -193,11 +200,13 @@ export default function App() {
         onPrev={prevYear}
         onNext={nextYear}
         onSizeIncrease={() => setCellSize(s => Math.min(s + 4, 64))}
-        onSizeDecrease={() => setCellSize(s => Math.max(s - 4, 22))}
+        onSizeDecrease={() => setCellSize(s => Math.max(s - 4, 18))}
         view={view}
         onViewChange={setView}
         weekendHighlight={weekendHighlight}
         onToggleWeekendHighlight={() => setWeekendHighlight(v => !v)}
+        isMobile={isMobile}
+        onToggleSidebar={() => setSidebarOpen(v => !v)}
       />
       <div className="main">
         <CalendarSidebar
@@ -206,6 +215,9 @@ export default function App() {
           onToggle={toggleCalendar}
           onlyMultiDay={onlyMultiDay}
           onToggleOnlyMultiDay={() => setOnlyMultiDay(v => !v)}
+          isMobile={isMobile}
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
         <div className="content">
           {loading ? (
@@ -215,17 +227,18 @@ export default function App() {
           ) : view === 'grid' ? (
             <YearView
               year={year}
-              cellSize={cellSize}
+              cellSize={effectiveCellSize}
               eventsByDay={eventsByDay}
               todayKey={todayKey}
               onDayClick={handleDayClick}
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
               weekendHighlight={weekendHighlight}
+              isMobile={isMobile}
             />
           ) : (
             <TransposedView
               year={year}
-              cellSize={cellSize}
+              cellSize={effectiveCellSize}
               eventsByDay={eventsByDay}
               todayKey={todayKey}
               onDayClick={handleDayClick}
@@ -242,9 +255,10 @@ export default function App() {
           onSelectEvent={handleDayViewSelect}
           onNewEvent={handleDayViewNewEvent}
           onClose={closeDayView}
+          isMobile={isMobile}
         />
       )}
-      {hovered && (() => {
+      {!isMobile && hovered && (() => {
         const events = eventsByDay.get(fmtDayKey(hovered.date)) ?? [];
         return events.length > 0
           ? <DayOverview date={hovered.date} events={events} anchorRect={hovered.rect} />
@@ -263,7 +277,7 @@ export default function App() {
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
         body { margin: 0; font-family: system-ui, sans-serif; background: #fff; }
-        .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .app { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
         .main { display: flex; flex: 1; overflow: hidden; }
         .content { flex: 1; overflow: auto; display: flex; flex-direction: column; }
         .status { padding: 2rem; text-align: center; color: #666; }

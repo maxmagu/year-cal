@@ -13,6 +13,7 @@ interface DayViewProps {
   onSelectEvent: (event: CalendarEvent) => void;
   onNewEvent: () => void;
   onClose: () => void;
+  isMobile?: boolean;
 }
 
 const HOUR_PX = 44; // pixels per hour in the timeline
@@ -35,7 +36,7 @@ function fmtTime(date: Date): string {
 }
 
 
-export default function DayView({ date, events, onSelectEvent, onNewEvent, onClose }: DayViewProps) {
+export default function DayView({ date, events, onSelectEvent, onNewEvent, onClose, isMobile }: DayViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Scroll to first event (or 8am) on open
@@ -71,7 +72,18 @@ export default function DayView({ date, events, onSelectEvent, onNewEvent, onClo
       onClick={onClose}
     >
       <div
-        style={{ background: '#fff', borderRadius: 10, boxShadow: '0 4px 32px rgba(0,0,0,0.2)', width: 380, maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+        style={{
+          background: '#fff',
+          borderRadius: isMobile ? 0 : 10,
+          boxShadow: isMobile ? 'none' : '0 4px 32px rgba(0,0,0,0.2)',
+          width: isMobile ? '100%' : 380,
+          maxWidth: isMobile ? undefined : 380,
+          height: isMobile ? '100%' : undefined,
+          maxHeight: isMobile ? undefined : '85vh',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
