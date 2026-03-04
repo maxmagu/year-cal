@@ -108,6 +108,8 @@ export default function CalendarSidebar({ calendars, selected, onToggle, onlyMul
         onToggle={onToggle}
         onlyMultiDay={onlyMultiDay}
         onToggleOnlyMultiDay={onToggleOnlyMultiDay}
+        showEventLabels={showEventLabels}
+        onToggleEventLabels={onToggleEventLabels}
       />
     </div>
   );

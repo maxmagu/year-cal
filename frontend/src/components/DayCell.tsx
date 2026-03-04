@@ -107,7 +107,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
                          :                            '0';
       const bleedLeft  = isStartDay ? 0 : 1;
       const bleedRight = isEndDay   ? 0 : 1;
-      return { key: `bg-${i}`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, height: stripHeight, bottom: i * (stripHeight + 1) };
+      return { key: `bg-${i}`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, height: stripHeight, bottom: i * (stripHeight + 1), summary: e.calendarEvent.summary, isStart: isStartDay };
     });
   })();
 
@@ -144,6 +144,11 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       ))}
       {showEventLabels && allDayBars.filter(b => b.isStart).map(b => (
         <span key={`lbl-ad-${b.key}`} style={{ position: 'absolute', left: 2, top: '50%', transform: 'translateY(-50%)', fontSize: '0.5rem', color: '#fff', whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4 }}>
+          {b.summary}
+        </span>
+      ))}
+      {showEventLabels && bgStrips.filter(b => b.isStart).map(b => (
+        <span key={`lbl-${b.key}`} style={{ position: 'absolute', left: 2, bottom: b.bottom + b.height + 1, fontSize: '0.5rem', color: b.background, whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4 }}>
           {b.summary}
         </span>
       ))}
