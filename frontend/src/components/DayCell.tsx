@@ -115,7 +115,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
                        :                            '0';
     const bleedLeft  = isStartDay ? 0 : 1;
     const bleedRight = isEndDay   ? 0 : 1;
-    return { key: `bg-${i}`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, height: bgStripHeight, bottom: i * (bgStripHeight + 1), summary: e.calendarEvent.summary, isStart: isStartDay, tentative: isTentative(e) };
+    return { key: `bg-${i}`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, height: bgStripHeight, bottom: i * (bgStripHeight + 1), summary: e.calendarEvent.summary, isStart: isStartDay, tentative: isTentative(e), eventUrl: e.calendarEvent.url };
   });
 
   return (
@@ -194,13 +194,16 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
         }} />
       )}
       {bgStrips.map(b => (
-        <div key={b.key} style={{
+        <div key={b.key} className={hoveredEventUrl === b.eventUrl ? 'event-bar-active' : undefined} style={{
           position: 'absolute', bottom: b.bottom, left: -b.bleedLeft, right: -b.bleedRight,
           height: b.height,
           background: b.tentative ? tentativeBg(b.background) : b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none', opacity: b.tentative ? 0.3 : 1,
+          pointerEvents: 'auto', opacity: b.tentative ? 0.3 : 1,
           boxShadow: '0 -1px 0 #fff',
-        }} />
+        }}
+          onMouseEnter={() => onEventHover?.(b.eventUrl)}
+          onMouseLeave={() => onEventHover?.(null)}
+        />
       ))}
       {/* Date/label — top-left corner, above everything */}
       <div style={{
