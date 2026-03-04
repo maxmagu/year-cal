@@ -19,7 +19,6 @@ export default function App() {
   const defaultCellSize = useIsMobile() ? 22 : 38;
   const [cellSize, setCellSize] = useState(defaultCellSize);
   const [view, setView] = useState<'grid' | 'transposed'>('grid');
-  const [weekendHighlight, setWeekendHighlight] = useState(true);
   const [calendars, setCalendars] = useState<CalendarInfo[]>([]);
   const [selectedCalendarUrls, setSelectedCalendarUrls] = useState<Set<string>>(new Set());
   const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
@@ -205,8 +204,6 @@ export default function App() {
         onSizeDecrease={() => setCellSize(s => Math.max(s - 4, 18))}
         view={view}
         onViewChange={setView}
-        weekendHighlight={weekendHighlight}
-        onToggleWeekendHighlight={() => setWeekendHighlight(v => !v)}
         isMobile={isMobile}
         onToggleSidebar={() => setSidebarOpen(v => !v)}
         showEventLabels={showEventLabels}
@@ -236,7 +233,6 @@ export default function App() {
               todayKey={todayKey}
               onDayClick={handleDayClick}
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
-              weekendHighlight={weekendHighlight}
               isMobile={isMobile}
               showEventLabels={showEventLabels}
             />
@@ -248,7 +244,6 @@ export default function App() {
               todayKey={todayKey}
               onDayClick={handleDayClick}
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
-              weekendHighlight={weekendHighlight}
               showEventLabels={showEventLabels}
             />
           )}

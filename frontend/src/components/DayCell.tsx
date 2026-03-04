@@ -11,7 +11,6 @@ interface DayCellProps {
   onMouseEnter?: (rect: DOMRect) => void;
   onMouseLeave?: () => void;
   label?: string;          // overrides date number (used by TransposedView for DOW letter)
-  weekendHighlight?: boolean;
   showEventLabels?: boolean;
 }
 
@@ -23,7 +22,7 @@ function getDayRole(event: { startDate: string; endDate: string }, date: Date): 
   return 'middle';
 }
 
-export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, weekendHighlight, showEventLabels }: DayCellProps) {
+export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, showEventLabels }: DayCellProps) {
   const [isHovered, setIsHovered] = useState(false);
   const dateKey = fmtDayKey(date);
 
@@ -160,7 +159,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       <div style={{
         position: 'absolute', top: 4, left: 5,
         fontSize: '0.65rem', lineHeight: 1,
-        fontWeight: (weekendHighlight && (date.getDay() === 0 || date.getDay() === 6)) ? 700 : 400,
+        fontWeight: (date.getDay() === 0 || date.getDay() === 6) ? 700 : 400,
         zIndex: 3, pointerEvents: 'none',
       }}>
         {label ?? date.getDate()}

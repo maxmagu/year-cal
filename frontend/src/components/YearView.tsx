@@ -8,12 +8,11 @@ interface YearViewProps {
   todayKey: string;
   onDayClick: (date: Date) => void;
   onDayHover: (date: Date | null, rect?: DOMRect) => void;
-  weekendHighlight: boolean;
   isMobile?: boolean;
   showEventLabels?: boolean;
 }
 
-export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight, isMobile, showEventLabels }: YearViewProps) {
+export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, isMobile, showEventLabels }: YearViewProps) {
   const gap = isMobile ? Math.round(cellSize * 0.3) : Math.round(cellSize * 0.6);
   const padding = isMobile ? '0.5rem' : '1rem';
 
@@ -36,7 +35,6 @@ export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayC
           todayKey={todayKey}
           onDayClick={onDayClick}
           onDayHover={onDayHover}
-          weekendHighlight={weekendHighlight}
           showEventLabels={showEventLabels}
         />
       ))}
