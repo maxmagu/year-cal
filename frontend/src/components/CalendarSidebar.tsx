@@ -33,7 +33,6 @@ function CalendarList({ calendars, selected, onToggle }: Pick<CalendarSidebarPro
             onChange={() => onToggle(cal.url)}
             style={{ accentColor: cal.color }}
           />
-          <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: cal.color, flexShrink: 0 }} />
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cal.displayName}</span>
         </label>
       ))}
