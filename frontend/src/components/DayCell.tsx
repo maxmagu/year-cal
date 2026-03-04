@@ -27,6 +27,8 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
   const [isHovered, setIsHovered] = useState(false);
   const dateKey = fmtDayKey(date);
 
+  const isTentative = (e: EventDataItem) => e.calendarEvent.summary?.includes('Tentative');
+
   // Three visual categories with different rendering:
   //   trueAllDayEvents    → full-height background fills (with rounded caps at start/end)
   //   multiDayTimedEvents → full-width vertical bars clipped to start/end time on boundary days
@@ -68,7 +70,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const bleedLeft  = role === 'start' ? 0 : 1;
       const bleedRight = role === 'end'   ? 0 : 1;
       const role_ = role;
-      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, summary: e.calendarEvent.summary, isStart: role_ === 'start' };
+      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, summary: e.calendarEvent.summary, isStart: role_ === 'start', tentative: isTentative(e) };
     });
   })();
 
@@ -90,11 +92,12 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const bleedRight = isEndDay   ? 0 : 1;
       const left  = `calc(${(i * colWidthPct).toFixed(1)}% - ${bleedLeft}px)`;
       const width = `calc(${colWidthPct.toFixed(1)}% + ${bleedLeft + bleedRight}px)`;
-      return { key: i, left, width, background: e.color ?? '#888', borderRadius, summary: e.calendarEvent.summary, isStart: isStartDay };
+      return { key: i, left, width, background: e.color ?? '#888', borderRadius, summary: e.calendarEvent.summary, isStart: isStartDay, tentative: isTentative(e) };
     });
   })();
 
-  // Background calendar events (e.g. hotel stays): thin top strip.
+  // Background calendar events (e.g. hotel stays): bottom strip tall enough for label.
+  const bgStripHeight = 10;
   const bgStrips = bgAllDayEvents.map((e, i) => {
     const isStartDay = fmtDayKey(e.startDate) === dateKey;
     const isEndDay   = fmtDayKey(e.endDate)   === dateKey;
@@ -105,7 +108,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
                        :                            '0';
     const bleedLeft  = isStartDay ? 0 : 1;
     const bleedRight = isEndDay   ? 0 : 1;
-    return { key: `bg-${i}`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, height: 3, top: i * 4, summary: e.calendarEvent.summary, isStart: isStartDay };
+    return { key: `bg-${i}`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, height: bgStripHeight, bottom: i * (bgStripHeight + 1), summary: e.calendarEvent.summary, isStart: isStartDay, tentative: isTentative(e) };
   });
 
   return (
@@ -120,7 +123,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           position: 'absolute', top: 1, height: 'calc(100% - 2px)',
           left: b.left, width: b.width,
           background: b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none',
+          pointerEvents: 'none', opacity: b.tentative ? 0.5 : 1,
         }} />
       ))}
       {mdBars.map(b => (
@@ -128,7 +131,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           position: 'absolute', left: -b.bleedLeft, right: -b.bleedRight,
           top: b.top, height: b.height,
           background: b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none', zIndex: 1,
+          pointerEvents: 'none', zIndex: 1, opacity: b.tentative ? 0.5 : 1,
         }} />
       ))}
       {showEventLabels && allDayBars.filter(b => b.isStart).map(b => (
@@ -137,7 +140,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
         </span>
       ))}
       {showEventLabels && bgStrips.filter(b => b.isStart).map(b => (
-        <span key={`lbl-${b.key}`} style={{ position: 'absolute', left: 2, top: b.top + b.height + 1, fontSize: '0.5rem', color: b.background, whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4 }}>
+        <span key={`lbl-${b.key}`} style={{ position: 'absolute', left: 2, bottom: b.bottom + 1, fontSize: '0.5rem', color: '#fff', whiteSpace: 'nowrap', lineHeight: `${b.height}px`, pointerEvents: 'none', zIndex: 4 }}>
           {b.summary}
         </span>
       ))}
@@ -161,7 +164,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
               <div key={ri} style={{ display: 'flex', gap: 2 }}>
                 {row.map((e, i) => {
                   const dotSize = cellSize <= 26 ? 4 : label ? 5 : 7;
-                  return <div key={i} style={{ width: dotSize, height: dotSize, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0 }} />;
+                  return <div key={i} style={{ width: dotSize, height: dotSize, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0, opacity: isTentative(e) ? 0.5 : 1 }} />;
                 })}
               </div>
             ))}
@@ -179,10 +182,11 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       )}
       {bgStrips.map(b => (
         <div key={b.key} style={{
-          position: 'absolute', top: b.top, left: -b.bleedLeft, right: -b.bleedRight,
+          position: 'absolute', bottom: b.bottom, left: -b.bleedLeft, right: -b.bleedRight,
           height: b.height,
           background: b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none', zIndex: 2,
+          pointerEvents: 'none', opacity: b.tentative ? 0.5 : 1,
+          boxShadow: '0 -1px 0 #fff',
         }} />
       ))}
       {/* Date/label — top-left corner, above everything */}
