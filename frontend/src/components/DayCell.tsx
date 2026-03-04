@@ -28,6 +28,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
   const dateKey = fmtDayKey(date);
 
   const isTentative = (e: EventDataItem) => e.calendarEvent.summary?.includes('Tentative');
+  const tentativeBg = (color: string) => `repeating-linear-gradient(135deg, ${color}, ${color} 2px, ${color}66 2px, ${color}66 4px)`;
 
   // Three visual categories with different rendering:
   //   trueAllDayEvents    → full-height background fills (with rounded caps at start/end)
@@ -122,16 +123,16 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
         <div key={b.key} style={{
           position: 'absolute', top: 1, height: 'calc(100% - 2px)',
           left: b.left, width: b.width,
-          background: b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none', opacity: b.tentative ? 0.5 : 1,
+          background: b.tentative ? tentativeBg(b.background) : b.background, borderRadius: b.borderRadius,
+          pointerEvents: 'none', opacity: b.tentative ? 0.3 : 1,
         }} />
       ))}
       {mdBars.map(b => (
         <div key={b.key} style={{
           position: 'absolute', left: -b.bleedLeft, right: -b.bleedRight,
           top: b.top, height: b.height,
-          background: b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none', zIndex: 1, opacity: b.tentative ? 0.5 : 1,
+          background: b.tentative ? tentativeBg(b.background) : b.background, borderRadius: b.borderRadius,
+          pointerEvents: 'none', zIndex: 1, opacity: b.tentative ? 0.3 : 1,
         }} />
       ))}
       {showEventLabels && allDayBars.filter(b => b.isStart).map(b => (
@@ -164,7 +165,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
               <div key={ri} style={{ display: 'flex', gap: 2 }}>
                 {row.map((e, i) => {
                   const dotSize = cellSize <= 26 ? 4 : label ? 5 : 7;
-                  return <div key={i} style={{ width: dotSize, height: dotSize, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0, opacity: isTentative(e) ? 0.5 : 1, boxShadow: '0 0 2px 1px rgba(255,255,255,0.9)' }} />;
+                  return <div key={i} style={{ width: dotSize, height: dotSize, borderRadius: '50%', background: isTentative(e) ? tentativeBg(e.color ?? '#888') : (e.color ?? '#888'), flexShrink: 0, opacity: isTentative(e) ? 0.3 : 1, boxShadow: '0 0 2px 1px rgba(255,255,255,0.9)' }} />;
                 })}
               </div>
             ))}
@@ -184,8 +185,8 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
         <div key={b.key} style={{
           position: 'absolute', bottom: b.bottom, left: -b.bleedLeft, right: -b.bleedRight,
           height: b.height,
-          background: b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none', opacity: b.tentative ? 0.5 : 1,
+          background: b.tentative ? tentativeBg(b.background) : b.background, borderRadius: b.borderRadius,
+          pointerEvents: 'none', opacity: b.tentative ? 0.3 : 1,
           boxShadow: '0 -1px 0 #fff',
         }} />
       ))}
