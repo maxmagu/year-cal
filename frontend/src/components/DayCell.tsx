@@ -57,8 +57,9 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const dayBeforeEnd  = new Date(end);   dayBeforeEnd.setDate(dayBeforeEnd.getDate() - 1);
       const isFirstMiddle = role === 'middle' && fmtDayKey(dayAfterStart) === dateKey;
       const isLastMiddle  = role === 'middle' && fmtDayKey(dayBeforeEnd)  === dateKey;
-      const borderRadius = role === 'start'                ? `${r}px 0 0 ${r}px`
-                         : role === 'end'                  ? `0 ${r}px ${r}px 0`
+      const isTwoDay = fmtDayKey(dayAfterStart) === fmtDayKey(end);
+      const borderRadius = role === 'start'                ? (isTwoDay ? `${r}px 0 ${r}px ${r}px` : `${r}px 0 0 ${r}px`)
+                         : role === 'end'                  ? (isTwoDay ? `${r}px ${r}px ${r}px 0` : `0 ${r}px ${r}px 0`)
                          : (isFirstMiddle && isLastMiddle) ? `${r}px 0 ${r}px 0`
                          : isFirstMiddle                   ? `${r}px 0 0 0`
                          : isLastMiddle                    ? `0 0 ${r}px 0`
