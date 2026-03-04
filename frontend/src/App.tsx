@@ -38,6 +38,7 @@ export default function App() {
   const [dayViewEvents, setDayViewEvents] = useState<DayViewEvent[]>([]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showEventLabels, setShowEventLabels] = useState(false);
 
   const calendarColors = new Map(calendars.map((c) => [c.url, c.color]));
 
@@ -208,6 +209,8 @@ export default function App() {
         onToggleWeekendHighlight={() => setWeekendHighlight(v => !v)}
         isMobile={isMobile}
         onToggleSidebar={() => setSidebarOpen(v => !v)}
+        showEventLabels={showEventLabels}
+        onToggleEventLabels={() => setShowEventLabels(v => !v)}
       />
       <div className="main">
         <CalendarSidebar
@@ -235,6 +238,7 @@ export default function App() {
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
               weekendHighlight={weekendHighlight}
               isMobile={isMobile}
+              showEventLabels={showEventLabels}
             />
           ) : (
             <TransposedView
@@ -245,6 +249,7 @@ export default function App() {
               onDayClick={handleDayClick}
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
               weekendHighlight={weekendHighlight}
+              showEventLabels={showEventLabels}
             />
           )}
         </div>

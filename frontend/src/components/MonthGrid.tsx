@@ -16,9 +16,10 @@ interface MonthGridProps {
   onDayClick: (date: Date) => void;
   onDayHover: (date: Date | null, rect?: DOMRect) => void;
   weekendHighlight: boolean;
+  showEventLabels?: boolean;
 }
 
-export default function MonthGrid({ year, month, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight }: MonthGridProps) {
+export default function MonthGrid({ year, month, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight, showEventLabels }: MonthGridProps) {
   const cells = getMonthDays(year, month);
   const weeks: (Date | null)[][] = [];
   for (let i = 0; i < cells.length; i += 7) {
@@ -53,6 +54,7 @@ export default function MonthGrid({ year, month, cellSize, eventsByDay, todayKey
                   cellSize={cellSize}
                   onClick={() => onDayClick(date)}
                   weekendHighlight={weekendHighlight}
+                  showEventLabels={showEventLabels}
                   onMouseEnter={(rect) => onDayHover(date, rect)}
                   onMouseLeave={() => onDayHover(null)}
                 />

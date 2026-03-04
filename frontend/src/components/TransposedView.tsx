@@ -17,6 +17,7 @@ interface TransposedViewProps {
   onDayClick: (date: Date) => void;
   onDayHover: (date: Date | null, rect?: DOMRect) => void;
   weekendHighlight: boolean;
+  showEventLabels?: boolean;
 }
 
 function isValidDate(year: number, month: number, day: number): boolean {
@@ -24,7 +25,7 @@ function isValidDate(year: number, month: number, day: number): boolean {
   return new Date(year, month, day).getMonth() === month;
 }
 
-export default function TransposedView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight }: TransposedViewProps) {
+export default function TransposedView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, weekendHighlight, showEventLabels }: TransposedViewProps) {
   // Track hovered (month, day) to cross-highlight the row label and column header
   const [hovered, setHovered] = useState<{ m: number; day: number } | null>(null);
 
@@ -100,6 +101,7 @@ export default function TransposedView({ year, cellSize, eventsByDay, todayKey, 
                     onClick={() => onDayClick(date)}
                     label={DOW[date.getDay()]}
                     weekendHighlight={weekendHighlight}
+                    showEventLabels={showEventLabels}
                     onMouseEnter={(rect) => handleMouseEnter(date, m, day, rect)}
                   />
                 );

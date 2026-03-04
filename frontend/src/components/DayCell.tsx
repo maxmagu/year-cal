@@ -12,6 +12,7 @@ interface DayCellProps {
   onMouseLeave?: () => void;
   label?: string;          // overrides date number (used by TransposedView for DOW letter)
   weekendHighlight?: boolean;
+  showEventLabels?: boolean;
 }
 
 // Returns where this date falls within a multi-day event's span.
@@ -22,7 +23,7 @@ function getDayRole(event: { startDate: string; endDate: string }, date: Date): 
   return 'middle';
 }
 
-export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, weekendHighlight }: DayCellProps) {
+export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, weekendHighlight, showEventLabels }: DayCellProps) {
   const [isHovered, setIsHovered] = useState(false);
   const dateKey = fmtDayKey(date);
 
@@ -63,7 +64,8 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       // Bleed 1px past the cell edge on open sides to cover the borderSpacing gap
       const bleedLeft  = role === 'start' ? 0 : 1;
       const bleedRight = role === 'end'   ? 0 : 1;
-      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight };
+      const role_ = role;
+      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, summary: e.calendarEvent.summary, isStart: role_ === 'start' };
     });
   })();
 
@@ -85,14 +87,14 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const bleedRight = isEndDay   ? 0 : 1;
       const left  = `calc(${(i * colWidthPct).toFixed(1)}% - ${bleedLeft}px)`;
       const width = `calc(${colWidthPct.toFixed(1)}% + ${bleedLeft + bleedRight}px)`;
-      return { key: i, left, width, background: e.color ?? '#888', borderRadius };
+      return { key: i, left, width, background: e.color ?? '#888', borderRadius, summary: e.calendarEvent.summary, isStart: isStartDay };
     });
   })();
 
 
   return (
     <td
-      style={{ position: 'relative', width: cellSize, height: cellSize, cursor: 'pointer', padding: 0, background: isHovered ? '#e8e8e8' : '#fafafa' }}
+      style={{ position: 'relative', width: cellSize, height: cellSize, cursor: 'pointer', padding: 0, background: isHovered ? '#e8e8e8' : '#fafafa', overflow: showEventLabels ? 'visible' : undefined }}
       onClick={onClick}
       onMouseEnter={(e) => { setIsHovered(true); onMouseEnter?.(e.currentTarget.getBoundingClientRect()); }}
       onMouseLeave={() => { setIsHovered(false); onMouseLeave?.(); }}
@@ -112,6 +114,16 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
           background: b.background, borderRadius: b.borderRadius,
           pointerEvents: 'none', zIndex: 1,
         }} />
+      ))}
+      {showEventLabels && allDayBars.filter(b => b.isStart).map(b => (
+        <span key={`lbl-ad-${b.key}`} style={{ position: 'absolute', left: 2, top: '50%', transform: 'translateY(-50%)', fontSize: '0.5rem', color: '#fff', whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4 }}>
+          {b.summary}
+        </span>
+      ))}
+      {showEventLabels && mdBars.filter(b => b.isStart).map(b => (
+        <span key={`lbl-md-${b.key}`} style={{ position: 'absolute', left: 2, top: b.top, fontSize: '0.5rem', color: '#fff', whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4 }}>
+          {b.summary}
+        </span>
       ))}
       {/* Dots anchored bottom-right, max 3 per row, rows grow upward */}
       {timedEvents.length > 0 && (() => {
