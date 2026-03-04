@@ -164,7 +164,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
               <div key={ri} style={{ display: 'flex', gap: 2 }}>
                 {row.map((e, i) => {
                   const dotSize = cellSize <= 26 ? 4 : label ? 5 : 7;
-                  return <div key={i} style={{ width: dotSize, height: dotSize, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0, opacity: isTentative(e) ? 0.5 : 1 }} />;
+                  return <div key={i} style={{ width: dotSize, height: dotSize, borderRadius: '50%', background: e.color ?? '#888', flexShrink: 0, opacity: isTentative(e) ? 0.5 : 1, boxShadow: '0 0 2px 1px rgba(255,255,255,0.9)' }} />;
                 })}
               </div>
             ))}
