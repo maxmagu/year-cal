@@ -28,6 +28,10 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
   const dateKey = fmtDayKey(date);
 
   const isTentative = (e: EventDataItem) => e.calendarEvent.summary?.includes('Tentative');
+  // In Mon-start grid: remaining columns to the right (Sun=0 cols remaining)
+  const monIdx = (date.getDay() + 6) % 7;
+  const colsRight = 6 - monIdx;
+  const labelMaxWidth = showEventLabels ? `${colsRight * cellSize + cellSize - 4}px` : undefined;
   const tentativeBg = (color: string) => `repeating-linear-gradient(135deg, ${color}, ${color} 2px, ${color}66 2px, ${color}66 4px)`;
 
   // Three visual categories with different rendering:
@@ -136,17 +140,17 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
         }} />
       ))}
       {showEventLabels && allDayBars.filter(b => b.isStart).map(b => (
-        <span key={`lbl-ad-${b.key}`} style={{ position: 'absolute', left: 2, top: '50%', transform: 'translateY(-50%)', fontSize: '0.5rem', color: '#fff', whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4 }}>
+        <span key={`lbl-ad-${b.key}`} style={{ position: 'absolute', left: 2, top: '50%', transform: 'translateY(-50%)', fontSize: '0.5rem', color: b.tentative ? '#000' : '#fff', whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4, maxWidth: labelMaxWidth, overflow: 'hidden' }}>
           {b.summary}
         </span>
       ))}
       {showEventLabels && bgStrips.filter(b => b.isStart).map(b => (
-        <span key={`lbl-${b.key}`} style={{ position: 'absolute', left: 2, bottom: b.bottom + 1, fontSize: '0.5rem', color: '#fff', whiteSpace: 'nowrap', lineHeight: `${b.height}px`, pointerEvents: 'none', zIndex: 4 }}>
+        <span key={`lbl-${b.key}`} style={{ position: 'absolute', left: 2, bottom: b.bottom + 1, fontSize: '0.5rem', color: '#fff', whiteSpace: 'nowrap', lineHeight: `${b.height}px`, pointerEvents: 'none', zIndex: 4, maxWidth: labelMaxWidth, overflow: 'hidden' }}>
           {b.summary}
         </span>
       ))}
       {showEventLabels && mdBars.filter(b => b.isStart).map(b => (
-        <span key={`lbl-md-${b.key}`} style={{ position: 'absolute', left: 2, top: b.top, fontSize: '0.5rem', color: '#fff', whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4 }}>
+        <span key={`lbl-md-${b.key}`} style={{ position: 'absolute', left: 2, top: b.top, fontSize: '0.5rem', color: b.tentative ? '#000' : '#fff', whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4, maxWidth: labelMaxWidth, overflow: 'hidden' }}>
           {b.summary}
         </span>
       ))}
