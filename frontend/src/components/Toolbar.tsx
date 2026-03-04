@@ -10,11 +10,9 @@ interface ToolbarProps {
   onViewChange: (view: 'grid' | 'transposed') => void;
   isMobile: boolean;
   onToggleSidebar: () => void;
-  showEventLabels: boolean;
-  onToggleEventLabels: () => void;
 }
 
-export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDecrease, view, onViewChange, isMobile, onToggleSidebar, showEventLabels, onToggleEventLabels }: ToolbarProps) {
+export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDecrease, view, onViewChange, isMobile, onToggleSidebar }: ToolbarProps) {
   return (
     <div style={{
       display: 'flex',
@@ -33,10 +31,6 @@ export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDe
       <span style={{ fontWeight: 600, fontSize: isMobile ? '1rem' : '1.1rem', minWidth: '4ch', textAlign: 'center' }}>{year}</span>
       <button onClick={onNext} style={btnStyle}>›</button>
       <div style={{ marginLeft: 'auto', display: 'flex', gap: isMobile ? '0.2rem' : '0.4rem', alignItems: 'center' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem', cursor: 'pointer', marginRight: '0.2rem' }}>
-          <input type="checkbox" checked={showEventLabels} onChange={onToggleEventLabels} />
-          {isMobile ? 'Lbl' : 'Labels'}
-        </label>
         <button onClick={onSizeDecrease} style={btnStyle}>−</button>
         <button onClick={onSizeIncrease} style={btnStyle}>+</button>
         {!isMobile && (

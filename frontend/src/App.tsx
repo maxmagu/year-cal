@@ -206,8 +206,6 @@ export default function App() {
         onViewChange={setView}
         isMobile={isMobile}
         onToggleSidebar={() => setSidebarOpen(v => !v)}
-        showEventLabels={showEventLabels}
-        onToggleEventLabels={() => setShowEventLabels(v => !v)}
       />
       <div className="main">
         <CalendarSidebar
@@ -216,6 +214,8 @@ export default function App() {
           onToggle={toggleCalendar}
           onlyMultiDay={onlyMultiDay}
           onToggleOnlyMultiDay={() => setOnlyMultiDay(v => !v)}
+          showEventLabels={showEventLabels}
+          onToggleEventLabels={() => setShowEventLabels(v => !v)}
           isMobile={isMobile}
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}

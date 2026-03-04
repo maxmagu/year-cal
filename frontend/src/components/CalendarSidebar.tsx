@@ -6,6 +6,8 @@ interface CalendarSidebarProps {
   onToggle: (url: string) => void;
   onlyMultiDay: boolean;
   onToggleOnlyMultiDay: () => void;
+  showEventLabels: boolean;
+  onToggleEventLabels: () => void;
   isMobile: boolean;
   open: boolean;
   onClose: () => void;
@@ -39,7 +41,7 @@ function CalendarList({ calendars, selected, onToggle }: Pick<CalendarSidebarPro
   );
 }
 
-export default function CalendarSidebar({ calendars, selected, onToggle, onlyMultiDay, onToggleOnlyMultiDay, isMobile, open, onClose }: CalendarSidebarProps) {
+export default function CalendarSidebar({ calendars, selected, onToggle, onlyMultiDay, onToggleOnlyMultiDay, showEventLabels, onToggleEventLabels, isMobile, open, onClose }: CalendarSidebarProps) {
   const veventCals = calendars.filter((c) => c.components.includes('VEVENT'));
   const vtodoCals = calendars.filter((c) => c.components.includes('VTODO'));
 
@@ -81,6 +83,8 @@ export default function CalendarSidebar({ calendars, selected, onToggle, onlyMul
             onToggle={onToggle}
             onlyMultiDay={onlyMultiDay}
             onToggleOnlyMultiDay={onToggleOnlyMultiDay}
+            showEventLabels={showEventLabels}
+            onToggleEventLabels={onToggleEventLabels}
           />
         </div>
       </div>
@@ -109,23 +113,33 @@ export default function CalendarSidebar({ calendars, selected, onToggle, onlyMul
   );
 }
 
-function SidebarContent({ veventCals, vtodoCals, selected, onToggle, onlyMultiDay, onToggleOnlyMultiDay }: {
+function SidebarContent({ veventCals, vtodoCals, selected, onToggle, onlyMultiDay, onToggleOnlyMultiDay, showEventLabels, onToggleEventLabels }: {
   veventCals: CalendarInfo[];
   vtodoCals: CalendarInfo[];
   selected: Set<string>;
   onToggle: (url: string) => void;
   onlyMultiDay: boolean;
   onToggleOnlyMultiDay: () => void;
+  showEventLabels: boolean;
+  onToggleEventLabels: () => void;
 }) {
   return (
     <>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 0', cursor: 'pointer', fontSize: '0.875rem', marginBottom: '1rem' }}>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 0', cursor: 'pointer', fontSize: '0.875rem' }}>
         <input
           type="checkbox"
           checked={onlyMultiDay}
           onChange={onToggleOnlyMultiDay}
         />
         <span>Hide single-day</span>
+      </label>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.3rem 0', cursor: 'pointer', fontSize: '0.875rem', marginBottom: '1rem' }}>
+        <input
+          type="checkbox"
+          checked={showEventLabels}
+          onChange={onToggleEventLabels}
+        />
+        <span>Show labels</span>
       </label>
       {veventCals.length > 0 && (
         <>
