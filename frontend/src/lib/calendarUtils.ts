@@ -5,6 +5,7 @@ export interface EventDataItem {
   endDate: Date;
   color?: string;
   calendarEvent: CalendarEvent;
+  calendarUrl: string;
 }
 
 // Uses year/month/date components instead of toISOString() so the key is always

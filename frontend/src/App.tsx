@@ -40,6 +40,7 @@ export default function App() {
   const [showEventLabels, setShowEventLabels] = useState(false);
 
   const calendarColors = new Map(calendars.map((c) => [c.url, c.color]));
+  const backgroundCalendarUrls = new Set(calendars.filter(c => c.displayName === 'Hotels & Stays').map(c => c.url));
 
   const visibleEvents = allEvents.filter((e) =>
     selectedCalendarUrls.has(e.calendarUrl) && (!onlyMultiDay || e.allDay || isMultiDay(e))
@@ -52,6 +53,7 @@ export default function App() {
     endDate:   e.allDay ? new Date(e.endDate   + 'T00:00:00') : new Date(e.endDate),
     color: calendarColors.get(e.calendarUrl),
     calendarEvent: e,
+    calendarUrl: e.calendarUrl,
   }));
 
   // Build day → events map for O(1) lookup in calendar cells
@@ -235,6 +237,7 @@ export default function App() {
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
               isMobile={isMobile}
               showEventLabels={showEventLabels}
+              backgroundCalendarUrls={backgroundCalendarUrls}
             />
           ) : (
             <TransposedView
@@ -245,6 +248,7 @@ export default function App() {
               onDayClick={handleDayClick}
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
               showEventLabels={showEventLabels}
+              backgroundCalendarUrls={backgroundCalendarUrls}
             />
           )}
         </div>

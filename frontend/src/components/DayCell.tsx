@@ -12,6 +12,7 @@ interface DayCellProps {
   onMouseLeave?: () => void;
   label?: string;          // overrides date number (used by TransposedView for DOW letter)
   showEventLabels?: boolean;
+  backgroundCalendarUrls?: Set<string>;
 }
 
 // Returns where this date falls within a multi-day event's span.
@@ -22,7 +23,7 @@ function getDayRole(event: { startDate: string; endDate: string }, date: Date): 
   return 'middle';
 }
 
-export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, showEventLabels }: DayCellProps) {
+export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, showEventLabels, backgroundCalendarUrls }: DayCellProps) {
   const [isHovered, setIsHovered] = useState(false);
   const dateKey = fmtDayKey(date);
 
@@ -30,7 +31,9 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
   //   trueAllDayEvents    → full-height background fills (with rounded caps at start/end)
   //   multiDayTimedEvents → full-width vertical bars clipped to start/end time on boundary days
   //   timedEvents         → dots at the bottom of the cell
-  const trueAllDayEvents    = events.filter(e => e.calendarEvent.allDay);
+  const isBackground = (e: EventDataItem) => backgroundCalendarUrls?.has(e.calendarUrl);
+  const trueAllDayEvents    = events.filter(e => e.calendarEvent.allDay && !isBackground(e));
+  const bgAllDayEvents      = events.filter(e => e.calendarEvent.allDay && isBackground(e));
   const multiDayTimedEvents = events.filter(e => !e.calendarEvent.allDay && isMultiDay(e.calendarEvent));
   const timedEvents         = events.filter(e => !e.calendarEvent.allDay && !isMultiDay(e.calendarEvent));
 
@@ -90,6 +93,23 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
     });
   })();
 
+  // Background calendar events (e.g. hotel stays): thin bottom strip instead of full fill.
+  const bgStrips = (() => {
+    if (bgAllDayEvents.length === 0) return [];
+    const stripHeight = 3;
+    return bgAllDayEvents.map((e, i) => {
+      const isStartDay = fmtDayKey(e.startDate) === dateKey;
+      const isEndDay   = fmtDayKey(e.endDate)   === dateKey;
+      const r = 2;
+      const borderRadius = (isStartDay && isEndDay) ? `${r}px`
+                         : isStartDay               ? `${r}px 0 0 ${r}px`
+                         : isEndDay                 ? `0 ${r}px ${r}px 0`
+                         :                            '0';
+      const bleedLeft  = isStartDay ? 0 : 1;
+      const bleedRight = isEndDay   ? 0 : 1;
+      return { key: `bg-${i}`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, height: stripHeight, bottom: i * (stripHeight + 1) };
+    });
+  })();
 
   return (
     <td
@@ -102,6 +122,14 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
         <div key={b.key} style={{
           position: 'absolute', top: 1, height: 'calc(100% - 2px)',
           left: b.left, width: b.width,
+          background: b.background, borderRadius: b.borderRadius,
+          pointerEvents: 'none',
+        }} />
+      ))}
+      {bgStrips.map(b => (
+        <div key={b.key} style={{
+          position: 'absolute', bottom: b.bottom, left: -b.bleedLeft, right: -b.bleedRight,
+          height: b.height,
           background: b.background, borderRadius: b.borderRadius,
           pointerEvents: 'none',
         }} />
