@@ -13,6 +13,8 @@ interface DayCellProps {
   label?: string;          // overrides date number (used by TransposedView for DOW letter)
   showEventLabels?: boolean;
   backgroundCalendarUrls?: Set<string>;
+  hoveredEventUrl?: string | null;
+  onEventHover?: (url: string | null) => void;
 }
 
 // Returns where this date falls within a multi-day event's span.
@@ -23,7 +25,7 @@ function getDayRole(event: { startDate: string; endDate: string }, date: Date): 
   return 'middle';
 }
 
-export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, showEventLabels, backgroundCalendarUrls }: DayCellProps) {
+export default function DayCell({ date, events, isToday, cellSize, onClick, onMouseEnter, onMouseLeave, label, showEventLabels, backgroundCalendarUrls, hoveredEventUrl, onEventHover }: DayCellProps) {
   const [isHovered, setIsHovered] = useState(false);
   const dateKey = fmtDayKey(date);
 
@@ -75,7 +77,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const bleedLeft  = role === 'start' ? 0 : 1;
       const bleedRight = role === 'end'   ? 0 : 1;
       const role_ = role;
-      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, summary: e.calendarEvent.summary, isStart: role_ === 'start', tentative: isTentative(e) };
+      return { key: i, top: `${topPct.toFixed(1)}%`, height: `${heightPct.toFixed(1)}%`, background: e.color ?? '#888', borderRadius, bleedLeft, bleedRight, summary: e.calendarEvent.summary, isStart: role_ === 'start', tentative: isTentative(e), eventUrl: e.calendarEvent.url };
     });
   })();
 
@@ -97,7 +99,7 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       const bleedRight = isEndDay   ? 0 : 1;
       const left  = `calc(${(i * colWidthPct).toFixed(1)}% - ${bleedLeft}px)`;
       const width = `calc(${colWidthPct.toFixed(1)}% + ${bleedLeft + bleedRight}px)`;
-      return { key: i, left, width, background: e.color ?? '#888', borderRadius, summary: e.calendarEvent.summary, isStart: isStartDay, tentative: isTentative(e) };
+      return { key: i, left, width, background: e.color ?? '#888', borderRadius, summary: e.calendarEvent.summary, isStart: isStartDay, tentative: isTentative(e), eventUrl: e.calendarEvent.url };
     });
   })();
 
@@ -124,20 +126,26 @@ export default function DayCell({ date, events, isToday, cellSize, onClick, onMo
       onMouseLeave={() => { setIsHovered(false); onMouseLeave?.(); }}
     >
       {allDayBars.map(b => (
-        <div key={b.key} style={{
+        <div key={b.key} className={hoveredEventUrl === b.eventUrl ? 'event-bar-active' : undefined} style={{
           position: 'absolute', top: 1, height: 'calc(100% - 2px)',
           left: b.left, width: b.width,
           background: b.tentative ? tentativeBg(b.background) : b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none', opacity: b.tentative ? 0.3 : 1,
-        }} />
+          opacity: b.tentative ? 0.3 : 1, pointerEvents: 'auto',
+        }}
+          onMouseEnter={() => onEventHover?.(b.eventUrl)}
+          onMouseLeave={() => onEventHover?.(null)}
+        />
       ))}
       {mdBars.map(b => (
-        <div key={b.key} style={{
+        <div key={b.key} className={hoveredEventUrl === b.eventUrl ? 'event-bar-active' : undefined} style={{
           position: 'absolute', left: -b.bleedLeft, right: -b.bleedRight,
           top: b.top, height: b.height,
           background: b.tentative ? tentativeBg(b.background) : b.background, borderRadius: b.borderRadius,
-          pointerEvents: 'none', zIndex: 1, opacity: b.tentative ? 0.3 : 1,
-        }} />
+          zIndex: 1, opacity: b.tentative ? 0.3 : 1, pointerEvents: 'auto',
+        }}
+          onMouseEnter={() => onEventHover?.(b.eventUrl)}
+          onMouseLeave={() => onEventHover?.(null)}
+        />
       ))}
       {showEventLabels && allDayBars.filter(b => b.isStart).map(b => (
         <span key={`lbl-ad-${b.key}`} style={{ position: 'absolute', left: 2, top: '50%', transform: 'translateY(-50%)', fontSize: '0.5rem', color: b.tentative ? '#000' : '#fff', whiteSpace: 'nowrap', lineHeight: 1, pointerEvents: 'none', zIndex: 4, maxWidth: labelMaxWidth, overflow: 'hidden' }}>

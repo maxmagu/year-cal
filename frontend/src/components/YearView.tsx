@@ -11,9 +11,11 @@ interface YearViewProps {
   isMobile?: boolean;
   showEventLabels?: boolean;
   backgroundCalendarUrls?: Set<string>;
+  hoveredEventUrl?: string | null;
+  onEventHover?: (url: string | null) => void;
 }
 
-export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, isMobile, showEventLabels, backgroundCalendarUrls }: YearViewProps) {
+export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayClick, onDayHover, isMobile, showEventLabels, backgroundCalendarUrls, hoveredEventUrl, onEventHover }: YearViewProps) {
   const gap = isMobile ? Math.round(cellSize * 0.3) : Math.round(cellSize * 0.6);
   const padding = isMobile ? '0.5rem' : '1rem';
 
@@ -38,6 +40,8 @@ export default function YearView({ year, cellSize, eventsByDay, todayKey, onDayC
           onDayHover={onDayHover}
           showEventLabels={showEventLabels}
           backgroundCalendarUrls={backgroundCalendarUrls}
+          hoveredEventUrl={hoveredEventUrl}
+          onEventHover={onEventHover}
         />
       ))}
     </div>

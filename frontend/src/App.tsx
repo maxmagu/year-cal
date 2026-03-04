@@ -38,6 +38,7 @@ export default function App() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showEventLabels, setShowEventLabels] = useState(false);
+  const [hoveredEventUrl, setHoveredEventUrl] = useState<string | null>(null);
 
   const calendarColors = new Map(calendars.map((c) => [c.url, c.color]));
   const backgroundCalendarUrls = new Set(calendars.filter(c => c.displayName === 'Hotels & Stays').map(c => c.url));
@@ -238,6 +239,8 @@ export default function App() {
               isMobile={isMobile}
               showEventLabels={showEventLabels}
               backgroundCalendarUrls={backgroundCalendarUrls}
+              hoveredEventUrl={hoveredEventUrl}
+              onEventHover={setHoveredEventUrl}
             />
           ) : (
             <TransposedView
@@ -249,6 +252,8 @@ export default function App() {
               onDayHover={(date, rect) => setHovered(date && rect ? { date, rect } : null)}
               showEventLabels={showEventLabels}
               backgroundCalendarUrls={backgroundCalendarUrls}
+              hoveredEventUrl={hoveredEventUrl}
+              onEventHover={setHoveredEventUrl}
             />
           )}
         </div>
@@ -287,6 +292,8 @@ export default function App() {
         .content { flex: 1; overflow: auto; display: flex; flex-direction: column; }
         .status { padding: 2rem; text-align: center; color: #666; }
         .error { color: #e74c3c; }
+        @keyframes event-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .event-bar-active { animation: event-pulse 1s ease-in-out infinite; }
       `}</style>
     </div>
   );
