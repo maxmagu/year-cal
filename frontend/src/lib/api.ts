@@ -1,6 +1,6 @@
 // Typed wrappers around the backend REST API.
 // All requests go through Vite's /api proxy → http://localhost:3000.
-import type { CalendarInfo, CalendarEvent, CreateEventPayload, UpdateEventPayload } from './types.js';
+import type { CalendarInfo, CalendarEvent, CreateEventPayload, UpdateEventPayload, ExtractedEvent } from './types.js';
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -44,5 +44,20 @@ export const api = {
       method: 'DELETE',
       body: JSON.stringify({ url, etag }),
     });
+  },
+
+  async importFile(file: File | null, text: string, year: number): Promise<ExtractedEvent[]> {
+    const form = new FormData();
+    if (file) form.append('file', file);
+    if (text.trim()) form.append('text', text.trim());
+    form.append('year', String(year));
+    // No Content-Type header — browser sets multipart/form-data with boundary automatically
+    const res = await fetch('/api/import', { method: 'POST', body: form });
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`HTTP ${res.status}: ${t}`);
+    }
+    const data = await res.json() as { events: ExtractedEvent[] };
+    return data.events;
   },
 };
