@@ -163,13 +163,13 @@ export default function ImportModal({ year, calendars, onImported, onClose }: Im
               <div style={{ fontSize: '0.8rem', color: '#e74c3c' }}>{extractError}</div>
             )}
 
+            {apiConfigured === false && (
+              <div style={{ fontSize: '0.8rem', color: '#e67e22' }}>AI API key not configured</div>
+            )}
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
               <button onClick={onClose} style={{ ...btnStyle, background: '#eee', color: '#333' }}>
                 Cancel
               </button>
-              {apiConfigured === false && (
-                <span style={{ fontSize: '0.8rem', color: '#e67e22' }}>AI API key not configured</span>
-              )}
               <button
                 onClick={handleExtract}
                 disabled={!canExtract}
