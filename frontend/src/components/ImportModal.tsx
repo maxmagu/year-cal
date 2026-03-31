@@ -167,10 +167,12 @@ export default function ImportModal({ year, calendars, onImported, onClose }: Im
               <button onClick={onClose} style={{ ...btnStyle, background: '#eee', color: '#333' }}>
                 Cancel
               </button>
+              {apiConfigured === false && (
+                <span style={{ fontSize: '0.8rem', color: '#e67e22' }}>AI API key not configured</span>
+              )}
               <button
                 onClick={handleExtract}
                 disabled={!canExtract}
-                title={apiConfigured === false ? 'AI API key not configured. Add ANTHROPIC_API_KEY to backend/.env.' : undefined}
                 style={{ ...btnStyle, background: canExtract ? '#4A90E2' : '#aaa', color: 'white', cursor: canExtract ? 'pointer' : 'not-allowed' }}
               >
                 {extracting ? 'Extracting…' : 'Extract events'}
