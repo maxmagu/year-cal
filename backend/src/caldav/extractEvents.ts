@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import pdfParse from 'pdf-parse';
+import { PDFParse } from 'pdf-parse';
 import { config } from '../config';
 import type { ExtractedEvent } from '../types/index';
 
@@ -99,7 +99,8 @@ export async function extractEvents(params: {
 
   if (fileBuffer && mimeType) {
     if (mimeType === 'application/pdf') {
-      const pdf = await pdfParse(fileBuffer);
+      const parser = new PDFParse({ data: fileBuffer });
+      const pdf = await parser.getText();
       return extractFromText(pdf.text, year);
     }
     if (IMAGE_TYPES.has(mimeType)) {
