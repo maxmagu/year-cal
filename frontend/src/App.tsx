@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, useLayoutEffect } from 'react';
 import { api } from './lib/api.js';
 import type { CalendarInfo, CalendarEvent, CreateEventPayload, UpdateEventPayload } from './lib/types.js';
 import { fmtDayKey, isMultiDay } from './lib/calendarUtils.js';
@@ -14,18 +14,27 @@ import TransposedView from './components/TransposedView.js';
 import DayOverview from './components/DayOverview.js';
 import ImportModal from './components/ImportModal.js';
 
+const TODAY_YEAR = new Date().getFullYear();
+
 export default function App() {
   const isMobile = useIsMobile();
-  const [year, setYear] = useState(new Date().getFullYear());
   const defaultCellSize = useIsMobile() ? 22 : 38;
   const [cellSize, setCellSize] = useState(defaultCellSize);
   const [view, setView] = useState<'grid' | 'transposed'>('grid');
   const [calendars, setCalendars] = useState<CalendarInfo[]>([]);
   const [selectedCalendarUrls, setSelectedCalendarUrls] = useState<Set<string>>(new Set());
-  const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
   const [onlyMultiDay, setOnlyMultiDay] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Multi-year infinite scroll state
+  const [loadedYears, setLoadedYears] = useState<number[]>([TODAY_YEAR]);
+  const [eventsByYear, setEventsByYear] = useState<Map<number, CalendarEvent[]>>(new Map());
+  const [visibleYear, setVisibleYear] = useState(TODAY_YEAR);
+  const [scrollToYear, setScrollToYear] = useState<number | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const fetchedYearsRef = useRef<Set<number>>(new Set());
+  const scrollCorrectionRef = useRef<{ scrollTop: number; scrollHeight: number } | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalEvent, setModalEvent] = useState<CalendarEvent | null>(null);
@@ -42,8 +51,18 @@ export default function App() {
   const [showEventLabels, setShowEventLabels] = useState(false);
   const [hoveredEventUrl, setHoveredEventUrl] = useState<string | null>(null);
 
+  const allCalendarUrls = useMemo(() => new Set(calendars.map(c => c.url)), [calendars]);
   const calendarColors = new Map(calendars.map((c) => [c.url, c.color]));
   const backgroundCalendarUrls = new Set(calendars.filter(c => c.displayName === 'Hotels & Stays').map(c => c.url));
+
+  // Derive allEvents from all loaded years
+  const allEvents = useMemo(() => {
+    const events: CalendarEvent[] = [];
+    for (const [, yearEvents] of eventsByYear) {
+      events.push(...yearEvents);
+    }
+    return events;
+  }, [eventsByYear]);
 
   const visibleEvents = allEvents.filter((e) =>
     selectedCalendarUrls.has(e.calendarUrl) && (!onlyMultiDay || e.allDay || isMultiDay(e))
@@ -73,19 +92,34 @@ export default function App() {
 
   const todayKey = fmtDayKey(new Date());
 
-  const loadEvents = useCallback(async (urls: Set<string>, yr: number) => {
-    setLoading(true);
-    setError('');
+  // Load events for a single year (no-op if already fetched)
+  const loadYear = useCallback(async (yr: number, calUrls?: Set<string>) => {
+    if (fetchedYearsRef.current.has(yr)) return;
+    fetchedYearsRef.current.add(yr);
     try {
-      const results = await Promise.all([...urls].map((url) => api.listEvents(url, yr)));
-      setAllEvents(results.flat());
+      const urls = [...(calUrls ?? allCalendarUrls)];
+      const results = await Promise.all(urls.map(url => api.listEvents(url, yr)));
+      setEventsByYear(prev => new Map([...prev, [yr, results.flat()]]));
     } catch (e) {
-      setError(String(e));
-    } finally {
-      setLoading(false);
+      console.error(`Failed to load events for ${yr}:`, e);
+      fetchedYearsRef.current.delete(yr);
     }
-  }, []);
+  }, [allCalendarUrls]);
 
+  // Refresh events for a year (force re-fetch)
+  const refreshYear = useCallback(async (yr: number) => {
+    fetchedYearsRef.current.delete(yr);
+    try {
+      const urls = [...allCalendarUrls];
+      const results = await Promise.all(urls.map(url => api.listEvents(url, yr)));
+      setEventsByYear(prev => new Map([...prev, [yr, results.flat()]]));
+      fetchedYearsRef.current.add(yr);
+    } catch (e) {
+      console.error(`Failed to refresh events for ${yr}:`, e);
+    }
+  }, [allCalendarUrls]);
+
+  // Initial load
   useEffect(() => {
     (async () => {
       try {
@@ -93,9 +127,12 @@ export default function App() {
         setCalendars(cals);
         const urls = new Set(cals.map((c) => c.url));
         setSelectedCalendarUrls(urls);
-        await loadEvents(urls, year);
+        fetchedYearsRef.current.add(TODAY_YEAR);
+        const results = await Promise.all([...urls].map(url => api.listEvents(url, TODAY_YEAR)));
+        setEventsByYear(new Map([[TODAY_YEAR, results.flat()]]));
       } catch (e) {
         setError(String(e));
+      } finally {
         setLoading(false);
       }
     })();
@@ -111,20 +148,83 @@ export default function App() {
     });
   }
 
-  // Year navigation always fetches all calendars (not just selected ones) so
-  // that toggling a calendar visibility never requires a network round-trip.
-  const allCalendarUrls = new Set(calendars.map(c => c.url));
+  // Stable callbacks for infinite scroll via refs (avoids re-creating IntersectionObservers)
+  const loadPrevYearRef = useRef<() => void>(() => {});
+  const loadNextYearRef = useRef<() => void>(() => {});
 
+  loadPrevYearRef.current = () => {
+    const yr = loadedYears[0] - 1;
+    if (loadedYears.includes(yr)) return;
+    // Save scroll position before prepending content above
+    const el = contentRef.current;
+    if (el) {
+      scrollCorrectionRef.current = { scrollTop: el.scrollTop, scrollHeight: el.scrollHeight };
+    }
+    setLoadedYears(prev => [yr, ...prev]);
+    loadYear(yr);
+  };
+
+  loadNextYearRef.current = () => {
+    const yr = loadedYears[loadedYears.length - 1] + 1;
+    if (loadedYears.includes(yr)) return;
+    setLoadedYears(prev => [...prev, yr]);
+    loadYear(yr);
+  };
+
+  const handleLoadPrevYear = useCallback(() => loadPrevYearRef.current(), []);
+  const handleLoadNextYear = useCallback(() => loadNextYearRef.current(), []);
+  const handleVisibleYearChange = useCallback((yr: number) => setVisibleYear(yr), []);
+  const handleScrollToYearHandled = useCallback(() => setScrollToYear(null), []);
+
+  // Correct scroll position after prepending a year (runs before paint)
+  useLayoutEffect(() => {
+    if (scrollToYear !== null) {
+      scrollCorrectionRef.current = null;
+      return;
+    }
+    const correction = scrollCorrectionRef.current;
+    const el = contentRef.current;
+    if (correction && el) {
+      const heightDiff = el.scrollHeight - correction.scrollHeight;
+      if (heightDiff > 0) {
+        el.scrollTop = correction.scrollTop + heightDiff;
+      }
+      scrollCorrectionRef.current = null;
+    }
+  }, [loadedYears, scrollToYear]);
+
+  // Year navigation (toolbar buttons)
   function prevYear() {
-    const yr = year - 1;
-    setYear(yr);
-    loadEvents(allCalendarUrls, yr);
+    const yr = visibleYear - 1;
+    setLoadedYears(prev => prev.includes(yr) ? prev : [...prev, yr].sort((a, b) => a - b));
+    loadYear(yr);
+    if (view === 'grid') {
+      setScrollToYear(yr);
+    } else {
+      setVisibleYear(yr);
+    }
   }
 
   function nextYear() {
-    const yr = year + 1;
-    setYear(yr);
-    loadEvents(allCalendarUrls, yr);
+    const yr = visibleYear + 1;
+    setLoadedYears(prev => prev.includes(yr) ? prev : [...prev, yr].sort((a, b) => a - b));
+    loadYear(yr);
+    if (view === 'grid') {
+      setScrollToYear(yr);
+    } else {
+      setVisibleYear(yr);
+    }
+  }
+
+  function handleYearClick() {
+    if (view === 'grid') {
+      setLoadedYears(prev => prev.includes(TODAY_YEAR) ? prev : [...prev, TODAY_YEAR].sort((a, b) => a - b));
+      loadYear(TODAY_YEAR);
+      setScrollToYear(TODAY_YEAR);
+    } else {
+      setVisibleYear(TODAY_YEAR);
+      loadYear(TODAY_YEAR);
+    }
   }
 
   function handleDayClick(date: Date) {
@@ -180,7 +280,7 @@ export default function App() {
         await api.createEvent(payload as CreateEventPayload);
       }
       closeModal();
-      await loadEvents(selectedCalendarUrls, year);
+      await refreshYear(visibleYear);
     } catch (e) {
       alert(`Failed to save event: ${e}`);
     }
@@ -190,21 +290,21 @@ export default function App() {
     try {
       await api.deleteEvent(detail.url, detail.etag);
       closeModal();
-      await loadEvents(selectedCalendarUrls, year);
+      await refreshYear(visibleYear);
     } catch (e) {
       alert(`Failed to delete event: ${e}`);
     }
   }
 
-  // On mobile, use smaller default cell size
   const effectiveCellSize = cellSize;
 
   return (
     <div className="app">
       <Toolbar
-        year={year}
+        year={visibleYear}
         onPrev={prevYear}
         onNext={nextYear}
+        onYearClick={handleYearClick}
         onSizeIncrease={() => setCellSize(s => Math.min(s + 4, 64))}
         onSizeDecrease={() => setCellSize(s => Math.max(s - 4, 18))}
         view={view}
@@ -226,14 +326,14 @@ export default function App() {
           open={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
         />
-        <div className="content">
+        <div className="content" ref={contentRef}>
           {loading ? (
             <div className="status">Loading…</div>
           ) : error ? (
             <div className="status error">{error}</div>
           ) : view === 'grid' ? (
             <YearView
-              year={year}
+              years={loadedYears}
               cellSize={effectiveCellSize}
               eventsByDay={eventsByDay}
               todayKey={todayKey}
@@ -244,10 +344,15 @@ export default function App() {
               backgroundCalendarUrls={backgroundCalendarUrls}
               hoveredEventUrl={hoveredEventUrl}
               onEventHover={setHoveredEventUrl}
+              onLoadPrevYear={handleLoadPrevYear}
+              onLoadNextYear={handleLoadNextYear}
+              onVisibleYearChange={handleVisibleYearChange}
+              scrollToYear={scrollToYear}
+              onScrollToYearHandled={handleScrollToYearHandled}
             />
           ) : (
             <TransposedView
-              year={year}
+              year={visibleYear}
               cellSize={effectiveCellSize}
               eventsByDay={eventsByDay}
               todayKey={todayKey}
@@ -289,11 +394,11 @@ export default function App() {
       )}
       {importModalOpen && (
         <ImportModal
-          year={year}
+          year={visibleYear}
           calendars={calendars}
           onImported={async () => {
             setImportModalOpen(false);
-            await loadEvents(selectedCalendarUrls, year);
+            await Promise.all(loadedYears.map(yr => refreshYear(yr)));
           }}
           onClose={() => setImportModalOpen(false)}
         />

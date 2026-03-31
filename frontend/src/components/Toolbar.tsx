@@ -4,6 +4,7 @@ interface ToolbarProps {
   year: number;
   onPrev: () => void;
   onNext: () => void;
+  onYearClick: () => void;
   onSizeIncrease: () => void;
   onSizeDecrease: () => void;
   view: 'grid' | 'transposed';
@@ -13,7 +14,7 @@ interface ToolbarProps {
   onImport: () => void;
 }
 
-export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDecrease, view, onViewChange, isMobile, onToggleSidebar, onImport }: ToolbarProps) {
+export default function Toolbar({ year, onPrev, onNext, onYearClick, onSizeIncrease, onSizeDecrease, view, onViewChange, isMobile, onToggleSidebar, onImport }: ToolbarProps) {
   return (
     <div style={{
       display: 'flex',
@@ -29,7 +30,11 @@ export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDe
         </button>
       )}
       <button onClick={onPrev} style={btnStyle}>‹</button>
-      <span style={{ fontWeight: 600, fontSize: isMobile ? '1rem' : '1.1rem', minWidth: '4ch', textAlign: 'center' }}>{year}</span>
+      <span
+        onClick={onYearClick}
+        title="Jump to today"
+        style={{ fontWeight: 600, fontSize: isMobile ? '1rem' : '1.1rem', minWidth: '4ch', textAlign: 'center', cursor: 'pointer' }}
+      >{year}</span>
       <button onClick={onNext} style={btnStyle}>›</button>
       <div style={{ marginLeft: 'auto', display: 'flex', gap: isMobile ? '0.2rem' : '0.4rem', alignItems: 'center' }}>
         <button onClick={onSizeDecrease} style={btnStyle}>−</button>
