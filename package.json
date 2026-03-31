@@ -12,7 +12,8 @@
   "scripts": {
     "dev": "concurrently --names \"back,front\" -c \"blue,green\" \"npm run dev -w backend\" \"npm run dev -w frontend\"",
     "build": "npm run build -w frontend && npm run build -w backend",
-    "start": "node app.js"
+    "start": "node app.js",
+    "restart": "lsof -ti :3000 | xargs kill -9 2>/dev/null; npm run start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

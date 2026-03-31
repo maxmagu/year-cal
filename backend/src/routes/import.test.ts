@@ -68,7 +68,7 @@ describe('POST /api/import', () => {
       .field('year', '2026');
 
     expect(res.status).toBe(500);
-    expect(res.body.error).toBe('Extraction failed');
+    expect(res.body.error).toBe('Anthropic error');
   });
 
   it('calls extractEvents with fileBuffer and mimeType when a file is uploaded', async () => {

@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { PDFParse } from 'pdf-parse';
+import sharp from 'sharp';
 import { config } from '../config';
 import type { ExtractedEvent } from '../types/index';
 
@@ -51,11 +52,31 @@ async function extractFromText(text: string, year: number): Promise<ExtractedEve
   return parseEvents(raw);
 }
 
+// Anthropic base64 limit is 5 MB. base64 is ~4/3x raw size, so cap raw at 3.5 MB.
+const MAX_IMAGE_BYTES = 3.5 * 1024 * 1024;
+
+async function compressImage(buffer: Buffer): Promise<{ buffer: Buffer; mimeType: 'image/jpeg' }> {
+  const compressed = await sharp(buffer)
+    .resize({ width: 2048, height: 2048, fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 85 })
+    .toBuffer();
+  return { buffer: compressed, mimeType: 'image/jpeg' };
+}
+
 async function extractFromImage(
   buffer: Buffer,
   mimeType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
   year: number
 ): Promise<ExtractedEvent[]> {
+  let imageBuffer = buffer;
+  let imageMimeType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' = mimeType;
+
+  if (buffer.length > MAX_IMAGE_BYTES) {
+    const result = await compressImage(buffer);
+    imageBuffer = result.buffer;
+    imageMimeType = result.mimeType;
+  }
+
   const response = await client.messages.create({
     model: 'claude-sonnet-4-5',
     max_tokens: 4096,
@@ -68,8 +89,8 @@ async function extractFromImage(
             type: 'image',
             source: {
               type: 'base64',
-              media_type: mimeType,
-              data: buffer.toString('base64'),
+              media_type: imageMimeType,
+              data: imageBuffer.toString('base64'),
             },
           },
           {
