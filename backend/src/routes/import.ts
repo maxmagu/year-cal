@@ -35,8 +35,9 @@ importRouter.post('/api/import', upload.single('file'), async (req, res) => {
 
     res.json({ events });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Extraction failed' });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('Import error:', message);
+    res.status(500).json({ error: message });
   }
 });
 
