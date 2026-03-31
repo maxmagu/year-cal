@@ -92,6 +92,9 @@ export async function extractEvents(params: {
   text?: string;
   year: number;
 }): Promise<ExtractedEvent[]> {
+  if (!config.anthropicKey) {
+    throw new Error('ANTHROPIC_API_KEY is not configured. Add it to backend/.env to use the import feature.');
+  }
   const { fileBuffer, mimeType, text, year } = params;
 
   if (fileBuffer && mimeType) {
