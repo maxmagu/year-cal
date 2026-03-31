@@ -15,6 +15,7 @@ export const config = {
   port: parseInt(process.env.PORT ?? '3000', 10),
   appleId: requireEnv('APPLE_ID'),
   appPassword: requireEnv('APP_SPECIFIC_PASSWORD'),
+  anthropicKey: requireEnv('ANTHROPIC_API_KEY'),
   caldavUrl: 'https://caldav.icloud.com',
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
 };

@@ -40,3 +40,12 @@ export interface UpdateEventPayload {
   endDate: string;
   allDay: boolean;
 }
+
+export interface ExtractedEvent {
+  summary: string;
+  description?: string;
+  location?: string;
+  startDate: string; // YYYY-MM-DD for all-day, ISO datetime for timed
+  endDate: string;
+  allDay: boolean;
+}

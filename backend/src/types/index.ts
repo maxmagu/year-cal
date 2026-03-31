@@ -46,3 +46,12 @@ export interface DeleteEventBody {
   url: string;
   etag: string;
 }
+
+export interface ExtractedEvent {
+  summary: string;
+  description?: string;
+  location?: string;
+  startDate: string; // YYYY-MM-DD for all-day, ISO datetime for timed
+  endDate: string;   // same format as startDate
+  allDay: boolean;
+}
