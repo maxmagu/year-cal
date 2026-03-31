@@ -5,6 +5,7 @@ import { join } from 'path';
 import { config } from './config';
 import { calendarsRouter } from './routes/calendars';
 import { eventsRouter } from './routes/events';
+import { importRouter } from './routes/import';
 
 export function buildServer() {
   const app = express();
@@ -14,13 +15,11 @@ export function buildServer() {
 
   app.use(calendarsRouter);
   app.use(eventsRouter);
+  app.use(importRouter);
 
-  // In production, serve the built frontend from frontend/dist/.
-  // In dev, Vite serves the frontend separately (no dist/ folder exists).
   const staticPath = join(__dirname, '../../frontend/dist');
   if (existsSync(staticPath)) {
     app.use(express.static(staticPath));
-    // SPA fallback: return index.html for any non-API route.
     app.get('*', (_req, res) => {
       res.sendFile(join(staticPath, 'index.html'));
     });
