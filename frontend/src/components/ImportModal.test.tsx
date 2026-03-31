@@ -21,6 +21,10 @@ describe('ImportModal', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: API key is configured
+    global.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve({ configured: true }),
+    } as unknown as Response);
   });
 
   it('renders upload step initially', () => {

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import multer, { MulterError } from 'multer';
 import { extractEvents } from '../caldav/extractEvents';
+import { config } from '../config';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -9,6 +10,10 @@ const upload = multer({
 });
 
 export const importRouter = Router();
+
+importRouter.get('/api/import', (_req, res) => {
+  res.json({ configured: Boolean(config.anthropicKey) });
+});
 
 importRouter.post('/api/import', upload.single('file'), async (req, res) => {
   try {

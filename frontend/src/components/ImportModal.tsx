@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type React from 'react';
 import type { CalendarInfo, ExtractedEvent } from '../lib/types.js';
 import { api } from '../lib/api.js';
@@ -44,7 +44,15 @@ export default function ImportModal({ year, calendars, onImported, onClose }: Im
   const [text, setText] = useState('');
   const [extracting, setExtracting] = useState(false);
   const [extractError, setExtractError] = useState('');
+  const [apiConfigured, setApiConfigured] = useState<boolean | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch('/api/import')
+      .then(r => r.json())
+      .then((d: { configured: boolean }) => setApiConfigured(d.configured))
+      .catch(() => setApiConfigured(true)); // assume configured on fetch error
+  }, []);
 
   const [drafts, setDrafts] = useState<DraftEvent[]>([]);
   const [calendarUrl, setCalendarUrl] = useState(veventCals[0]?.url ?? '');
@@ -100,7 +108,7 @@ export default function ImportModal({ year, calendars, onImported, onClose }: Im
   }
 
   const selectedCount = drafts.filter(d => d.selected).length;
-  const canExtract = !extracting && (file !== null || text.trim().length > 0);
+  const canExtract = !extracting && (file !== null || text.trim().length > 0) && apiConfigured !== false;
 
   return (
     <div style={overlayStyle} onClick={onClose} role="presentation">
@@ -162,6 +170,7 @@ export default function ImportModal({ year, calendars, onImported, onClose }: Im
               <button
                 onClick={handleExtract}
                 disabled={!canExtract}
+                title={apiConfigured === false ? 'AI API key not configured. Add ANTHROPIC_API_KEY to backend/.env.' : undefined}
                 style={{ ...btnStyle, background: canExtract ? '#4A90E2' : '#aaa', color: 'white', cursor: canExtract ? 'pointer' : 'not-allowed' }}
               >
                 {extracting ? 'Extracting…' : 'Extract events'}
