@@ -12,6 +12,7 @@ import type { DayViewEvent } from './components/DayView.js';
 import YearView from './components/YearView.js';
 import TransposedView from './components/TransposedView.js';
 import DayOverview from './components/DayOverview.js';
+import ImportModal from './components/ImportModal.js';
 
 export default function App() {
   const isMobile = useIsMobile();
@@ -37,6 +38,7 @@ export default function App() {
   const [dayViewEvents, setDayViewEvents] = useState<DayViewEvent[]>([]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [showEventLabels, setShowEventLabels] = useState(false);
   const [hoveredEventUrl, setHoveredEventUrl] = useState<string | null>(null);
 
@@ -209,6 +211,7 @@ export default function App() {
         onViewChange={setView}
         isMobile={isMobile}
         onToggleSidebar={() => setSidebarOpen(v => !v)}
+        onImport={() => setImportModalOpen(true)}
       />
       <div className="main">
         <CalendarSidebar
@@ -282,6 +285,17 @@ export default function App() {
           onSave={handleSave}
           onDelete={handleDelete}
           onClose={closeModal}
+        />
+      )}
+      {importModalOpen && (
+        <ImportModal
+          year={year}
+          calendars={calendars}
+          onImported={async () => {
+            setImportModalOpen(false);
+            await loadEvents(selectedCalendarUrls, year);
+          }}
+          onClose={() => setImportModalOpen(false)}
         />
       )}
       <style>{`

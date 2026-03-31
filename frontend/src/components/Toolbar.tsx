@@ -10,9 +10,10 @@ interface ToolbarProps {
   onViewChange: (view: 'grid' | 'transposed') => void;
   isMobile: boolean;
   onToggleSidebar: () => void;
+  onImport: () => void;
 }
 
-export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDecrease, view, onViewChange, isMobile, onToggleSidebar }: ToolbarProps) {
+export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDecrease, view, onViewChange, isMobile, onToggleSidebar, onImport }: ToolbarProps) {
   return (
     <div style={{
       display: 'flex',
@@ -45,6 +46,9 @@ export default function Toolbar({ year, onPrev, onNext, onSizeIncrease, onSizeDe
             >Columns</button>
           </div>
         )}
+        <button onClick={onImport} style={{ ...btnStyle, marginLeft: '0.4rem' }}>
+          Import
+        </button>
       </div>
     </div>
   );
