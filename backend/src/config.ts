@@ -1,9 +1,14 @@
 import dotenv from 'dotenv';
 import { resolve } from 'path';
 
-dotenv.config({ path: resolve(process.cwd(), '.env') });
-dotenv.config({ path: resolve(__dirname, '../../.env') });
-dotenv.config({ path: resolve(__dirname, '../.env') });
+// Try multiple locations; override lets .env win over empty shell vars
+for (const p of [
+  resolve(process.cwd(), '.env'),
+  resolve(process.cwd(), 'backend/.env'),
+  resolve(process.cwd(), '../.env'),
+]) {
+  dotenv.config({ path: p, override: true });
+}
 
 function requireEnv(name: string): string {
   const val = process.env[name];

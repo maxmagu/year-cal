@@ -18,6 +18,7 @@ importRouter.get('/api/import', (_req, res) => {
 importRouter.post('/api/import', upload.single('file'), async (req, res) => {
   try {
     const year = parseInt(req.body.year as string, 10) || new Date().getFullYear();
+    const timezone = (req.body.timezone as string) || 'UTC';
     const text = req.body.text as string | undefined;
     const file = req.file;
 
@@ -31,6 +32,7 @@ importRouter.post('/api/import', upload.single('file'), async (req, res) => {
       mimeType: file?.mimetype,
       text: text?.trim(),
       year,
+      timezone,
     });
 
     res.json({ events });

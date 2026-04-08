@@ -51,6 +51,7 @@ export const api = {
     if (file) form.append('file', file);
     if (text.trim()) form.append('text', text.trim());
     form.append('year', String(year));
+    form.append('timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
     // No Content-Type header — browser sets multipart/form-data with boundary automatically
     const res = await fetch('/api/import', { method: 'POST', body: form });
     if (!res.ok) {

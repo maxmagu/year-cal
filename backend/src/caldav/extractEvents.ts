@@ -6,7 +6,8 @@ import type { ExtractedEvent } from '../types/index';
 
 const client = new Anthropic({ apiKey: config.anthropicKey });
 
-const SYSTEM_PROMPT = `You are a calendar event extractor. Given a document or image, extract all calendar events.
+function buildSystemPrompt(timezone: string): string {
+  return `You are a calendar event extractor. Given a document or image, extract all calendar events.
 Return ONLY a valid JSON array. No explanation, no markdown fences, no preamble.
 Each object in the array must have:
   summary: string (event title, required)
@@ -15,7 +16,10 @@ Each object in the array must have:
   startDate: string (YYYY-MM-DD for all-day events, or full ISO 8601 datetime for timed events)
   endDate: string (same format as startDate; if only a start is given, use the same date)
   allDay: boolean (true if no specific time is given)
+If the document specifies times in a timezone different from ${timezone}, convert them to ${timezone}.
+All datetime values must be in the user's local timezone (${timezone}) — do NOT use UTC offsets or "Z" suffix.
 If no events are found, return [].`;
+}
 
 function buildUserPrompt(year: number): string {
   return `Extract all calendar events. If a date has no year, assume ${year}. Return only the JSON array.`;
@@ -27,6 +31,7 @@ export function parseEvents(raw: string): ExtractedEvent[] {
       .replace(/^```json\s*/i, '')
       .replace(/^```\s*/i, '')
       .replace(/```\s*$/, '')
+      .replace(/:\s*undefined\b/g, ': null')
       .trim();
     const parsed = JSON.parse(cleaned);
     if (!Array.isArray(parsed)) return [];
@@ -36,11 +41,11 @@ export function parseEvents(raw: string): ExtractedEvent[] {
   }
 }
 
-async function extractFromText(text: string, year: number): Promise<ExtractedEvent[]> {
+async function extractFromText(text: string, year: number, timezone: string): Promise<ExtractedEvent[]> {
   const response = await client.messages.create({
     model: 'claude-sonnet-4-5',
     max_tokens: 4096,
-    system: SYSTEM_PROMPT,
+    system: buildSystemPrompt(timezone),
     messages: [
       {
         role: 'user',
@@ -66,7 +71,8 @@ async function compressImage(buffer: Buffer): Promise<{ buffer: Buffer; mimeType
 async function extractFromImage(
   buffer: Buffer,
   mimeType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
-  year: number
+  year: number,
+  timezone: string
 ): Promise<ExtractedEvent[]> {
   let imageBuffer = buffer;
   let imageMimeType: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' = mimeType;
@@ -80,7 +86,7 @@ async function extractFromImage(
   const response = await client.messages.create({
     model: 'claude-sonnet-4-5',
     max_tokens: 4096,
-    system: SYSTEM_PROMPT,
+    system: buildSystemPrompt(timezone),
     messages: [
       {
         role: 'user',
@@ -112,30 +118,32 @@ export async function extractEvents(params: {
   mimeType?: string;
   text?: string;
   year: number;
+  timezone?: string;
 }): Promise<ExtractedEvent[]> {
   if (!config.anthropicKey) {
     throw new Error('ANTHROPIC_API_KEY is not configured. Add it to backend/.env to use the import feature.');
   }
-  const { fileBuffer, mimeType, text, year } = params;
+  const { fileBuffer, mimeType, text, year, timezone = 'UTC' } = params;
 
   if (fileBuffer && mimeType) {
     if (mimeType === 'application/pdf') {
       const parser = new PDFParse({ data: fileBuffer });
       const pdf = await parser.getText();
-      return extractFromText(pdf.text, year);
+      return extractFromText(pdf.text, year, timezone);
     }
     if (IMAGE_TYPES.has(mimeType)) {
       return extractFromImage(
         fileBuffer,
         mimeType as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
-        year
+        year,
+        timezone
       );
     }
-    return extractFromText(fileBuffer.toString('utf-8'), year);
+    return extractFromText(fileBuffer.toString('utf-8'), year, timezone);
   }
 
   if (text) {
-    return extractFromText(text, year);
+    return extractFromText(text, year, timezone);
   }
 
   return [];
