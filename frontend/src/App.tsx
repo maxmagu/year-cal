@@ -235,11 +235,6 @@ export default function App() {
       setModalEvent(null);
       setModalDefaultDate(isoDate);
       setModalOpen(true);
-    } else if (onDay.length === 1 && !isMobile) {
-      const ev = onDay[0].calendarEvent;
-      setModalEvent(ev);
-      setModalDefaultDate(ev.startDate.slice(0, 10));
-      setModalOpen(true);
     } else {
       setDayViewDate(date);
       setDayViewEvents(onDay.map(ev => ({ calendarEvent: ev.calendarEvent, color: ev.color as string | undefined })));
