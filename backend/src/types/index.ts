@@ -34,6 +34,7 @@ export interface UpdateEventBody {
   url: string;
   etag: string;
   calendarUrl: string;
+  originalCalendarUrl?: string;
   summary: string;
   description?: string;
   location?: string;

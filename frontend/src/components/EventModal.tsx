@@ -62,7 +62,7 @@ export default function EventModal({ event, defaultDate, calendars, onSave, onDe
       calendarUrl,
     };
     if (event) {
-      onSave({ ...base, url: event.url, etag: event.etag } as UpdateEventPayload);
+      onSave({ ...base, url: event.url, etag: event.etag, originalCalendarUrl: event.calendarUrl } as UpdateEventPayload);
     } else {
       onSave(base as CreateEventPayload);
     }
@@ -99,16 +99,14 @@ export default function EventModal({ event, defaultDate, calendars, onSave, onDe
           />
         </label>
 
-        {!event && (
-          <label style={labelStyle}>
-            Calendar
-            <select value={calendarUrl} onChange={(e) => setCalendarUrl(e.target.value)} style={inputStyle}>
-              {calendars.map((cal) => (
-                <option key={cal.url} value={cal.url}>{cal.displayName}</option>
-              ))}
-            </select>
-          </label>
-        )}
+        <label style={labelStyle}>
+          Calendar
+          <select value={calendarUrl} onChange={(e) => setCalendarUrl(e.target.value)} style={inputStyle}>
+            {calendars.map((cal) => (
+              <option key={cal.url} value={cal.url}>{cal.displayName}</option>
+            ))}
+          </select>
+        </label>
 
         <label style={{ ...labelStyle, flexDirection: 'row', alignItems: 'center', gap: '0.4rem', fontSize: '0.875rem' }}>
           <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} />

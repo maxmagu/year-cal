@@ -73,10 +73,29 @@ eventsRouter.post('/api/events', async (req, res) => {
 // PUT /api/events
 eventsRouter.put('/api/events', async (req, res) => {
   try {
-    const { url, etag, calendarUrl, summary, description, location, startDate, endDate, allDay } = req.body as UpdateEventBody;
+    const { url, etag, calendarUrl, originalCalendarUrl, summary, description, location, startDate, endDate, allDay } = req.body as UpdateEventBody;
 
-    // Fetch existing to get UID
     const client = await getClient();
+
+    // If calendar changed, delete from old and create in new (CalDAV has no move)
+    if (originalCalendarUrl && originalCalendarUrl !== calendarUrl) {
+      const uid = uuidv4();
+      const iCalString = generateICalEvent({ uid, summary, description, location, startDate, endDate, allDay });
+
+      await client.deleteCalendarObject({
+        calendarObject: { url, etag },
+      });
+      await client.createCalendarObject({
+        calendar: { url: calendarUrl },
+        iCalString,
+        filename: `${uid}.ics`,
+      });
+
+      res.json({ ok: true });
+      return;
+    }
+
+    // Same calendar — normal update
     const existing = await client.fetchCalendarObjects({
       calendar: { url: calendarUrl },
       objectUrls: [url],

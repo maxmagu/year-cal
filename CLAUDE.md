@@ -83,7 +83,7 @@ Click handling in `App.handleDayClick`: empty day → new event modal; single ev
 ## Deployment (VPS)
 
 ```bash
-ssh root@89.167.61.160 "cd /var/www/yearcal && git pull && cd frontend && npm run build"
+ssh root@168.119.231.157 "cd /opt/yearcal && git pull && npm run build && pm2 restart yearcal"
 ```
 
-Backend runs on port 3000 and serves `frontend/dist` as static files with SPA fallback. No separate frontend server in production.
+Domain: `yearcal.maxapps.live`. Backend runs on port 3003 behind nginx (reverse proxy with Let's Encrypt). Nginx config: `/etc/nginx/sites-available/yearcal.maxapps.live`. No separate frontend server in production.
