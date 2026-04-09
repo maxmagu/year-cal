@@ -10,35 +10,41 @@ interface EventModalProps {
   onClose: () => void;
 }
 
-function toDatetimeLocal(iso: string): string {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function toDateInput(iso: string): string {
+function toDatePart(iso: string): string {
   return iso.slice(0, 10);
 }
 
-function toISO(val: string, isAllDay: boolean): string {
-  // For all-day events, keep the date string as-is — backend handles it as UTC.
-  // Converting through Date() here would shift the date in UTC+ timezones.
-  if (isAllDay) return val;
-  return new Date(val).toISOString();
+function toTimePart(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function toISO(date: string, time: string, isAllDay: boolean): string {
+  if (isAllDay) return date;
+  return new Date(`${date}T${time}`).toISOString();
 }
 
 export default function EventModal({ event, defaultDate, calendars, onSave, onDelete, onClose }: EventModalProps) {
   const [summary, setSummary] = useState(event?.summary ?? '');
   const [description, setDescription] = useState(event?.description ?? '');
   const [location, setLocation] = useState(event?.location ?? '');
-  const [allDay, setAllDay] = useState(event?.allDay ?? true);
+  const [allDay, setAllDay] = useState(event?.allDay ?? false);
   const [startDate, setStartDate] = useState(() => {
-    if (event) return event.allDay ? toDateInput(event.startDate) : toDatetimeLocal(event.startDate);
+    if (event) return toDatePart(event.startDate);
     return defaultDate;
   });
+  const [startTime, setStartTime] = useState(() => {
+    if (event && !event.allDay) return toTimePart(event.startDate);
+    return '09:00';
+  });
   const [endDate, setEndDate] = useState(() => {
-    if (event) return event.allDay ? toDateInput(event.endDate) : toDatetimeLocal(event.endDate);
+    if (event) return toDatePart(event.endDate);
     return defaultDate;
+  });
+  const [endTime, setEndTime] = useState(() => {
+    if (event && !event.allDay) return toTimePart(event.endDate);
+    return '10:00';
   });
   const [calendarUrl, setCalendarUrl] = useState(event?.calendarUrl ?? calendars[0]?.url ?? '');
 
@@ -57,8 +63,8 @@ export default function EventModal({ event, defaultDate, calendars, onSave, onDe
       description: description || undefined,
       location: location || undefined,
       allDay,
-      startDate: toISO(startDate, allDay),
-      endDate: toISO(endDate, allDay),
+      startDate: toISO(startDate, startTime, allDay),
+      endDate: toISO(endDate, endTime, allDay),
       calendarUrl,
     };
     if (event) {
@@ -113,28 +119,26 @@ export default function EventModal({ event, defaultDate, calendars, onSave, onDe
           All day
         </label>
 
-        {allDay ? (
-          <>
-            <label style={labelStyle}>
-              Start date
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={inputStyle} />
-            </label>
-            <label style={labelStyle}>
-              End date
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={inputStyle} />
-            </label>
-          </>
-        ) : (
-          <>
-            <label style={labelStyle}>
-              Start
-              <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={inputStyle} />
-            </label>
-            <label style={labelStyle}>
-              End
-              <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={inputStyle} />
-            </label>
-          </>
+        <label style={labelStyle}>
+          Start date
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={inputStyle} />
+        </label>
+        {!allDay && (
+          <label style={labelStyle}>
+            Start time
+            <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} style={inputStyle} />
+          </label>
+        )}
+
+        <label style={labelStyle}>
+          End date
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={inputStyle} />
+        </label>
+        {!allDay && (
+          <label style={labelStyle}>
+            End time
+            <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} style={inputStyle} />
+          </label>
         )}
 
         <label style={labelStyle}>
