@@ -82,8 +82,14 @@ Click handling in `App.handleDayClick`: empty day → new event modal; single ev
 
 ## Deployment (VPS)
 
+Deploy = push to `master`, then:
+
 ```bash
-ssh root@168.119.231.157 "cd /opt/yearcal && git pull && npm run build && pm2 restart yearcal"
+ssh max@168.119.231.157 deploy yearcal
 ```
+
+The server's `deploy` script fetches `master`, runs `npm ci` + `npm run build`, restarts and health-checks the app. Roll back with `deploy yearcal <commit>`. Logs: `ssh max@168.119.231.157 sudo -u prod pm2 logs yearcal --nostream`.
+
+The app runs as user `prod` from `/srv/yearcal` under prod's PM2. `npm ci` needs a lock file that's in sync with `package.json` and lists all platforms' native binaries: on the Mac use `npm ci`, not `npm install`, unless you're changing dependencies.
 
 Domain: `yearcal.maxapps.live`. Backend runs on port 3003 behind nginx (reverse proxy with Let's Encrypt). Nginx config: `/etc/nginx/sites-available/yearcal.maxapps.live`. No separate frontend server in production.
